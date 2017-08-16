@@ -2,16 +2,28 @@
 
 import {User} from "./Profile"
 
+declare var io;
+
 $(document).ready(function() {
-    console.log("SERVER RUNNINGGGGGGGGGGGG HNGGGG");
+    console.log("Server running.");
 
-    let bob = new User("robertinhUUhHH22",
-                        "Roberto Álvares Ribeiro Ramos",
-                        "bobgatinhodosurf@gmail.com");
-    bob.registerUser();
+    let socket = io();
 
-    // $("#displayBob").click(function() {
-    //     $("#robertao").html(bob.getNickname() + "<br>" + bob.getFullName() + "<br>" + bob.getEmail());
-    // });
+    $("#sendMessage").click(function(){
+        socket.emit("chat message", $("#message").val());
+        $("#message").val("");
+        return false;
+    });
+
+    $("#message").keyup(function(e) {
+        if (e.keyCode == 13) {
+            $("#sendMessage").click();
+        }
+    });
+
+    socket.on("chat message", function(name, content) {
+        $("#messages").append($("<li>").text("" + name + ": " + content));
+        $("html, body").scrollTop($(document).height());
+    });
 });
 
