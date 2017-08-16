@@ -53,7 +53,7 @@ run:
 tests: all
 	@cp $(JS)/$(JSCOMPRESSED) $(JS)/$(JSTESTS)
 
-dirs: | $(CSS) $(JS) $(LIB) $(TS) $(INDEX)
+dirs: | $(CSS) $(JS) $(LIB) $(TS)
 
 libs: | $(LIBNAMES)
 
@@ -67,10 +67,6 @@ simple:
 $(CSS) $(JS) $(LIB) $(TS):
 	@echo "[  mkdir  ] $@"
 	@mkdir -p $@
-
-$(INDEX):
-	@echo "[  index  ] $@"
-	@touch $(INDEX)
 
 $(LIBNAMES):
 	$(eval PURENAME=$(patsubst $(LIB)/%, %, $@))
