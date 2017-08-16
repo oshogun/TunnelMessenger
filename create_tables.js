@@ -1,12 +1,3 @@
-var mysql = require("mysql");
-var connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'tunnel',
-    password : '123456',
-    database : 'TunnelMessenger'
-});
-
-connection.connect();
 
 var userTableSql = "\
 CREATE TABLE IF NOT EXISTS users ( \
@@ -63,18 +54,29 @@ var tableQueries = {
     "messages": messageTableSql
 };
 
-for (var name in tableQueries) {
-    if (tableQueries.hasOwnProperty(name)) {
-        (function(name) {
-            connection.query(tableQueries[name], function(error) {
-                if (error) {
-                    throw error;
-                }
-
-                console.log("Created table '" + name + "'");
-            });
-        })(name);
+var mysql = require("mysql");
+var fs = require('fs');
+fs.readFile('credentials.json', 'utf8', function(err, data) {
+    if (err) {
+        return console.log(err);
     }
-}
 
-connection.end();
+    var connection = mysql.createConnection(JSON.parse(data));
+
+    connection.connect();
+    for (var name in tableQueries) {
+        if (tableQueries.hasOwnProperty(name)) {
+            (function(name) {
+                connection.query(tableQueries[name], function(error) {
+                    if (error) {
+                        throw error;
+                    }
+
+                    console.log("Created table '" + name + "'");
+                });
+            })(name);
+        }
+    }
+
+    connection.end();
+});
