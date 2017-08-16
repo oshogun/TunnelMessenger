@@ -45,6 +45,10 @@ all: dirs libs languages machines
 
 install:
 	@npm install
+	@node create_tables.js
+
+run:
+	@node app.js
 
 tests: all
 	@cp $(JS)/$(JSCOMPRESSED) $(JS)/$(JSTESTS)
