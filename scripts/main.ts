@@ -8,9 +8,10 @@ $(document).ready(function() {
     let bob = new User("robertinhUUhHH22",
                         "Roberto Álvares Ribeiro Ramos",
                         "bobgatinhodosurf@gmail.com");
+    bob.registerUser();
 
-    $("#displayBob").click(function() {
-        $("#robertao").html(bob.getNickname() + "<br>" + bob.getFullName() + "<br>" + bob.getEmail());
-    });
+    // $("#displayBob").click(function() {
+    //     $("#robertao").html(bob.getNickname() + "<br>" + bob.getFullName() + "<br>" + bob.getEmail());
+    // });
 });
 
