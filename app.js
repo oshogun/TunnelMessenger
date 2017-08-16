@@ -2,6 +2,7 @@
 var app = require('express')();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
+var bodyParser = require("body-parser");
 var path = require('path');
 
 var allowedFolders = ["css", "js", "lib"];
@@ -9,6 +10,25 @@ var port = 3000;
 
 var users = {};
 var connected_users = 0;
+
+app.use(bodyParser.urlencoded({
+	extended:true
+}));
+
+app.use(bodyParser.json());
+
+app.get("/TunnelMessenger", function(request, response) {
+    response.sendFile(__dirname + "/public/index.html");
+});
+
+app.post("/login", function(request, response) {
+	console.log(request.body.user.name);
+	response.sendFile(__dirname + "/public/index.html");
+});
+app.get("/register", function(request,response){
+	response.sendFile(__dirname + "/public/register.html");
+});
+
 app.get("/TunnelMessenger", function(request, response) {
     response.sendFile(__dirname + "/public/index.html");
 });
