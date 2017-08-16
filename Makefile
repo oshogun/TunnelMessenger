@@ -43,6 +43,9 @@ all: dirs libs languages machines
 
 	@rm $(JS)/$(JSBASE)
 
+install:
+	@npm install
+
 tests: all
 	@cp $(JS)/$(JSCOMPRESSED) $(JS)/$(JSTESTS)
 

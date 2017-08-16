@@ -9,7 +9,7 @@ $(document).ready(function() {
                         "Roberto Álvares Ribeiro Ramos",
                         "bobgatinhodosurf@gmail.com");
 
-    $("#displayBob").click(function displayBob() {
+    $("#displayBob").click(function() {
         $("#robertao").html(bob.getNickname() + "<br>" + bob.getFullName() + "<br>" + bob.getEmail());
     });
 });
