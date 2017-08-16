@@ -1,3 +1,61 @@
+html, body {
+	height: 99%;
+}
+
 body {
-	font-family: sans-serif;
+	font-family: arial;
+	font-size: 16px;
+	margin: 0;
+}
+
+input {
+	font-family: arial;
+	font-size: 16px;
+	padding: 10px;
+}
+
+#chat {
+	border: 1px solid black;
+	display: table;
+	height: 100%;
+	width: 99%;
+}
+
+span.table {
+	display: table;
+}
+
+span.row {
+	display: table-row;
+}
+
+span.row > * {
+	display: table-cell;
+}
+
+#header {
+	border-bottom: 1px solid #DDD;
+	padding: 10px;
+	text-align: center;
+}
+
+#displayRow {
+	height: 100%;
+}
+
+#display {
+	height: 100%;
+	padding: 10px;
+}
+
+#footer {
+	text-align: center;
+}
+
+#messageBoxTable, #messageBoxRow, #messageBoxCell {
+	width: 100%;
+}
+
+#message {
+	width: 100%;
 }

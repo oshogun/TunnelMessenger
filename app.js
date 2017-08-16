@@ -39,23 +39,22 @@ var userManager = new UserManager(app);
 var io = require('socket.io')(http);
 
 io.on('connection', function(socket) {
-	
-	connected_users += 1;
-	users[socket.id] = "user"+connected_users;
-
+    connected_users++;
+    users[socket.id] = "user" + connected_users;
 
     console.log('User connected');
     socket.on('chat message', function(msg){
-    	io.emit('chat message',users[socket.id], msg);
+        io.emit('chat message',users[socket.id], msg);
     });
+
     socket.on('disconnect', function(){
     	console.log('user disconnected');
     	connected_users -= 1;
   });
-});
+    
 
 http.listen(3000, function(){
-	console.log('listening on *:3000');
+    console.log('listening on *:3000');
 });
 
 
