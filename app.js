@@ -4,7 +4,7 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var bodyParser = require("body-parser");
 var path = require('path');
-
+var bodyParser = require("body-parser");
 var allowedFolders = ["css", "js", "lib"];
 var port = 3000;
 
@@ -28,11 +28,6 @@ app.post("/login", function(request, response) {
 app.get("/register", function(request,response){
 	response.sendFile(__dirname + "/public/register.html");
 });
-
-app.get("/TunnelMessenger", function(request, response) {
-    response.sendFile(__dirname + "/public/index.html");
-});
-
 for (var i = 0; i < allowedFolders.length; i++) {
     app.get("/" + allowedFolders[i] + "/*", function(request, response) {
         response.sendFile(__dirname + request.url);
@@ -54,14 +49,10 @@ io.on('connection', function(socket) {
     });
 
     socket.on('disconnect', function(){
-        console.log('user disconnected');
-    });
-});
-
-io.on('connection', function(socket){
-  console.log('a user connected');
-  
-});
+    	console.log('user disconnected');
+    	connected_users -= 1;
+  });
+    
 
 http.listen(3000, function(){
     console.log('listening on *:3000');
