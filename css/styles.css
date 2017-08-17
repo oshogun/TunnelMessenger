@@ -1,26 +1,47 @@
 html, body {
 	height: 99%;
+	color:#2d2d1b;
+	background-color: #333300;
 }
 
 body {
-	font-family: arial;
+	font-family: monospace;
 	font-size: 16px;
 	margin: 0;
 }
 
 input {
-	font-family: arial;
+	font-family: monospace;
 	font-size: 16px;
 	padding: 10px;
+	border:none;
+	color:white;
+	background-color: #660066;
 }
 
 #chat {
+	color:cyan;
 	border: 1px solid black;
 	display: table;
 	height: 100%;
 	width: 99%;
 }
 
+.button {
+	border-radius: 4px;
+	cursor:pointer;
+	border:none;
+	color:white;
+	background-color:darkslategrey;
+	font-size:23px;
+	text-align:center;
+	display:inline-block;
+	transition-duration:0.2s;
+}
+
+.button:hover {
+	background-color:#669999;
+}
 span.table {
 	display: table;
 }
@@ -52,8 +73,12 @@ span.row > * {
 	text-align: center;
 }
 
-#messageBoxTable, #messageBoxRow, #messageBoxCell {
+#messageBoxTable, #messageBoxRow{
 	width: 100%;
+
+}
+#messageBoxCell {
+	width:70%;
 }
 
 #messageBox {
@@ -70,4 +95,5 @@ span.row > * {
 
 .messageBlock .content {
 	padding-left: 20px;
+	color:#00ff99;
 }

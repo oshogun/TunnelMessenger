@@ -25,6 +25,10 @@ export class TextMessage implements Message {
 		return this.datetime;
 	}
 
+	getContent():string {
+		return this.content;
+	}
+
 	private author: User;
 	private content: string;
 	private datetime: Date;

@@ -9,6 +9,7 @@ export class Chat {
         this.node = node;
     }
 
+ 
     addMessage(message: Message): void {
         let previousMessage = this.messages[this.messages.length - 1];
         this.messages.push(message);

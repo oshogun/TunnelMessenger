@@ -12,14 +12,17 @@ $(document).ready(function() {
     let socket = io();
     let chat = new Chat("Chat #1", [], $("#display").get(0));
 
-    socket.emit("chat message", "kk eae men");
 
     $("#sendMessage").click(function(){
         socket.emit("chat message", $("#messageBox").val());
         $("#messageBox").val("");
         return false;
     });
-
+    $('#nicknameButton').click(function(){
+    	socket.emit('changeNick', $("#nicknameBox").val());
+    	$("#nicknameBox").val("Novo Nickname");
+    	return false;
+    });
     $("#messageBox").keyup(function(e) {
         if (e.keyCode == 13) {
             $("#sendMessage").click();
@@ -34,8 +37,10 @@ $(document).ready(function() {
         }
 
         let message = new TextMessage(content, dummyUsers[name], new Date());
-        chat.addMessage(message);
-        $("html, body").scrollTop($(document).height());
+       
+	     chat.addMessage(message);
+	    $("html, body").scrollTop($(document).height());
+    	
     });
 });
 
