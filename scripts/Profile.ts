@@ -24,6 +24,10 @@ export class User {
         return this.subnick;
     }
 
+    display(node: HTMLElement): void {
+        node.innerHTML = this.nickname;
+    }
+
     registerUser():void {
         let mysql = require("mysql");
         let connection = mysql.createConnection({

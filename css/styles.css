@@ -56,6 +56,18 @@ span.row > * {
 	width: 100%;
 }
 
-#message {
+#messageBox {
 	width: 100%;
+}
+
+.messageBlock {
+	margin-bottom: 5px;
+}
+
+.messageBlock .author:after {
+	content: " says:";
+}
+
+.messageBlock .content {
+	padding-left: 20px;
 }
