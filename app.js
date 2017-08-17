@@ -51,7 +51,8 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function(){
     	console.log('user disconnected');
     	connected_users -= 1;
-  });
+    });
+});
     
 
 http.listen(3000, function(){
