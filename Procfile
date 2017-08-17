@@ -1,1 +1,4 @@
-web: node app.js
+web: 
+    make install
+    make
+    node app.js
