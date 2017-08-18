@@ -46,7 +46,7 @@ io.on("connection", function(socket) {
     
     console.log('User connected');
     socket.on("chatMessage", function(msg) {
-        socket.broadcast.to(socket.id).emit("sendMessage", users[socket.id], msg);
+        socket.emit("sendMessage", users[socket.id], msg);
         socket.broadcast.emit('chatMessage', users[socket.id], msg);
         if(msg == "/github") {
             io.emit('chatMessage', users[0], "https://github.com/oshogun/TunnelMessenger");
