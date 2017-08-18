@@ -67,7 +67,7 @@ $(document).ready(function() {
     });
 
     socket.on("isTyping", function(user) {
-        $("#typingCell").html(user+" is typing...");
+        $("#typingCell").html(user + " is typing...");
 
     })
     socket.on("stoppedTyping", function() {

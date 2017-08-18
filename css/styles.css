@@ -1,6 +1,6 @@
 html, body {
 	height: 99%;
-	color:#2d2d1b;
+	color: #2d2d1b;
 	background-color: #333300;
 }
 
@@ -14,13 +14,13 @@ input {
 	font-family: monospace;
 	font-size: 16px;
 	padding: 10px;
-	border:none;
-	color:white;
+	border: none;
+	color: white;
 	background-color: #660066;
 }
 
 #chat {
-	color:cyan;
+	color: cyan;
 	border: 1px solid black;
 	display: table;
 	height: 100%;
@@ -29,19 +29,20 @@ input {
 
 .button {
 	border-radius: 4px;
-	cursor:pointer;
-	border:none;
-	color:white;
-	background-color:darkslategrey;
-	font-size:23px;
-	text-align:center;
-	display:inline-block;
-	transition-duration:0.2s;
+	cursor: pointer;
+	border: none;
+	color: white;
+	background-color: darkslategrey;
+	font-size: 23px;
+	text-align: center;
+	display: inline-block;
+	transition-duration: 0.2s;
 }
 
-.button:hover {
-	background-color:#669999;
+.button: hover {
+	background-color: #669999;
 }
+
 span.table {
 	display: table;
 }
@@ -77,12 +78,14 @@ span.row > * {
 	color: gray;
 	text-align: left;
 }
-#messageBoxTable, #messageBoxRow{
+
+#messageBoxTable, #messageBoxRow {
 	width: 100%;
 
 }
+
 #messageBoxCell {
-	width:70%;
+	width: 70%;
 }
 
 #messageBox {
@@ -94,12 +97,12 @@ span.row > * {
 }
 
 .messageBlock .author:after {
-	content: " says:";
+	content: " says: ";
 }
 
 .messageBlock .content {
 	padding-left: 20px;
-	color:#00ff99;
+	color: #00ff99;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
 	word-break: break-all;
