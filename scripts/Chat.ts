@@ -14,14 +14,10 @@ export class Chat {
         let previousMessage = this.messages[this.messages.length - 1];
         this.messages.push(message);
 
-        console.log("previous:", previousMessage);
-        console.log("this:", message);
         if (!previousMessage || message.getAuthor() != previousMessage.getAuthor()) {
-            console.log("[SPAWN]");
             this.spawnMessageBlock();
         }
 
-        console.log("[MERGE]");
         this.mergeWithLastBlock(message);
 
         // for (let user of this.users) {
