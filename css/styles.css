@@ -100,4 +100,9 @@ span.row > * {
 .messageBlock .content {
 	padding-left: 20px;
 	color:#00ff99;
+	overflow-wrap: break-word;
+	word-wrap: break-word;
+	word-break: break-all;
+	word-break: break-word;
+	hyphens: auto;
 }
