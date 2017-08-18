@@ -20,14 +20,21 @@ $(document).ready(function() {
     });
     $('#nicknameButton').click(function(){
     	socket.emit('changeNick', $("#nicknameBox").val());
-    	$("#nicknameBox").val("Novo Nickname");
+    	$("#nicknameBox").val("");
     	return false;
     });
     $("#messageBox").keyup(function(e) {
         if (e.keyCode == 13) {
             $("#sendMessage").click();
+        } else {
+        	socket.emit('isTyping');
+        	setTimeout(function(){
+        		socket.emit('stoppedTyping');
+        	}, 1000);
         }
     });
+
+
 
     let dummyUsers = {};
 
@@ -41,6 +48,14 @@ $(document).ready(function() {
 	     chat.addMessage(message);
 	    $("html, body").scrollTop($(document).height());
     	
+    });
+
+    socket.on("isTyping", function(user) {
+    	$("#typingCell").html(user+" is typing...");
+
+    })
+    socket.on("stoppedTyping", function() {
+    	$("#typingCell").html("");
     });
 });
 

@@ -40,7 +40,7 @@ users[0] = "SERVER";
 var io = require('socket.io')(http);
 
 io.on('connection', function(socket) {
-    connected_users++;
+    connected_users += 1;
  
     users[socket.id] = "anon"+connected_users;
     
@@ -64,6 +64,14 @@ io.on('connection', function(socket) {
     socket.on('disconnect', function(){
     	console.log('user disconnected');
     	connected_users -= 1;
+    });
+
+    socket.on('isTyping', function() {
+    	io.emit('isTyping', users[socket.id]);
+    });
+
+    socket.on('stoppedTyping',function() {
+    	io.emit('stoppedTyping');
     });
 });
     

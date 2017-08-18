@@ -73,6 +73,10 @@ span.row > * {
 	text-align: center;
 }
 
+#typingCell {
+	color: gray;
+	text-align: left;
+}
 #messageBoxTable, #messageBoxRow{
 	width: 100%;
 
