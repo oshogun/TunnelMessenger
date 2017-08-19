@@ -20,7 +20,7 @@ $(document).ready(function() {
         return false;
     });
 
-    $('#nicknameButton').click(function(){
+    $("#nicknameButton").click(function(){
         socket.emit("changeNick", $("#nicknameBox").val());
         $("#nicknameBox").val("");
         return false;
@@ -42,18 +42,24 @@ $(document).ready(function() {
     $(document).focus(function() {
         unreadMessages = 0;
         document.title = defaultTitle;
-    })
+    });
 
     function processMessage(name: string, content: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
             dummyUsers[name] = new User(name, name + " da Silva", name + "@baidu.com");
         }
 
+        // TODO: handle different types of messages
+        content = content.substr(content.indexOf(":") + 2);
         let message = new TextMessage(content, dummyUsers[name], new Date());
        
         chat.addMessage(message);
         $("html, body").scrollTop($(document).height());
     }
+
+    socket.on("menu", function(id) {
+        console.log("[OPEN MENU]", id);
+    });
 
     socket.on("sendMessage", processMessage);
 

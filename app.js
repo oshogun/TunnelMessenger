@@ -45,6 +45,10 @@ io.on("connection", function(socket) {
 
     console.log('A user has connected. Users online: ' + connectedUsers);
 
+    function sanitizeInput(content) {
+        return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
     function sendToSender(type/*, ...arguments */) {
         var otherArgs = Array.prototype.slice.call(arguments, 1);
         socket.emit.apply(socket, [type, users[socket.id]].concat(otherArgs));
@@ -59,27 +63,58 @@ io.on("connection", function(socket) {
         io.emit("chatMessage", users[0], message);
     }
 
+    function commandType(command) {
+        return command.substr(0, command.indexOf(":"));
+    }
+
+    function commandContent(command) {
+        return command.substr(command.indexOf(":") + 2);
+    }
+
     var commands = {
-        "/github": "https://github.com/oshogun/TunnelMessenger",
-        "/whoami": function() {
-            return users[socket.id]
+        "/github": {
+            "broadcast": true,
+            "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
+        },
+        "/settings": {
+            "broadcast": false,
+            "result": "MENU: settings"
+        },
+        "/whoami": {
+            "broadcast": true,
+            "result": function() {
+                return "TEXT: " + users[socket.id]
+            }
         }
     }
 
     socket.on("chatMessage", function(message) {
-        sendToSender("sendMessage", message);
-        sendToOthers("chatMessage", message);
+        var isValidCommand = commands.hasOwnProperty(message);
+        var command = commands[message];
+        var broadcast = isValidCommand ? command.broadcast : true;
 
-        if (commands.hasOwnProperty(message)) {
-            var command = commands[message];
-            var output = (command instanceof Function) ? command() : command;
-            serverBroadcast(output);
+        message = "TEXT: " + sanitizeInput(message);
+        sendToSender("sendMessage", message);
+
+        if (broadcast) {
+            sendToOthers("chatMessage", message);
+        }
+
+        if (isValidCommand) {
+            var result = command.result;
+            var output = (result instanceof Function) ? result() : result;
+
+            if (commandType(output) == "MENU") {
+                socket.emit("menu", commandContent(output));
+            } else {
+                serverBroadcast(output);
+            }
         }
     });
 
     socket.on("changeNick", function(nick){
         if (nick != null && nick != "") {
-            users[socket.id] = nick;
+            users[socket.id] = sanitizeInput(nick);
         }
     });
 
