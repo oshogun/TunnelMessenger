@@ -32,8 +32,8 @@ export class User {
         let mysql = require("mysql");
         let connection = mysql.createConnection({
             host     : 'localhost',
-            user     : 'tunnel',
-            password : '123456',
+            user     : 'labsec',
+            password : 'labsec',
             database : 'TunnelMessenger'
         });
 

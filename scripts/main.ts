@@ -79,5 +79,15 @@ $(document).ready(function() {
     socket.on("stoppedTyping", function() {
         $("#typingCell").html("");
     });
+
+    socket.on("nick changed", function(nicks) {
+        let nickList = "<ol>";
+        for(let i = 0; i < nicks.length; i++) {
+            nickList += "\n<li>" + nicks[i] + "</li>";
+        }
+        nickList += "\n<ol>";
+
+        $("#list").html(nickList);
+    });
 });
 

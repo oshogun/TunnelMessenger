@@ -1,7 +1,7 @@
 html, body {
 	height: 99%;
 	color: #2d2d1b;
-	background-color: #333300;
+	background-color: #121314;
 }
 
 body {
@@ -19,12 +19,31 @@ input {
 	background-color: #660066;
 }
 
-#chat {
+#userList {
+	float: right;
 	color: cyan;
-	border: 1px solid black;
+	border: 1px solid white;
 	display: table;
 	height: 100%;
-	width: 99%;
+	width: 29%;
+	left:100%;
+}
+#onlineHeader {
+	border-bottom: 1px solid #DDD;
+	padding: 10px;
+	text-align: center;
+	color:white;
+	vertical-align: top;
+	height: 8%;
+}
+
+#chat {
+	float: left;
+	color: cyan;
+	border: 1px solid white;
+	display: table;
+	height: 100%;
+	width: 70%;
 }
 
 .button {
@@ -55,10 +74,18 @@ span.row > * {
 	display: table-cell;
 }
 
+span.collumn {
+	display: table-column;
+}
+span.collumn > * {
+	display:table-cell;
+}
 #header {
 	border-bottom: 1px solid #DDD;
 	padding: 10px;
 	text-align: center;
+	vertical-align: top;
+	color:white;
 }
 
 #displayRow {
@@ -68,6 +95,8 @@ span.row > * {
 #display {
 	height: 100%;
 	padding: 10px;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 #footer {
