@@ -101,25 +101,30 @@ io.on("connection", function(socket) {
     var commands = {
         "/github": {
             "broadcast": true,
+            "description": "Displays the URL of this project's github page",
             "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
         },
         "/settings": {
             "broadcast": false,
+            "description": "Displays a settings menu",
             "result": "MENU: settings"
         },
         "/whoami": {
             "broadcast": true,
+            "description": "Shows your nickname",
             "result": function() {
                 return "TEXT: " + users[socket.id]
             }
         },
         "/zoeira_enable": {
+            "description": "Enables the zoeira mode",
         	"result": function() {
         		zoeira = true;
         		return "TEXT: zoeira mode ENGAGED";
         	}
         },
         "/zoeira_disable": {
+            "description": "Disables the zoeira mode",
         	"result": function() {
         		zoeira = false;
         		return "TEXT: zoeira mode aborted";
@@ -127,10 +132,37 @@ io.on("connection", function(socket) {
         },
         "/nick": {
             "broadcast": false,
+            "description": "Changes the nickname of the user",
             "parameters": 1,
             "result": changeNickCallback
+        },
+        "/help": {
+            "broadcast": false,
+            "description": "Lists all available commands",
+            "result": function() {
+                var output = "TEXT: Available commands:<ul>";
+                for (var name in commands) {
+                    if (commands.hasOwnProperty(name)) {
+                        var command = commands[name];
+                        output += "<li>" + name;
+
+                        if (command.parameters) {
+                            output += " (" + command.parameters + " parameter(s))";
+                        }
+
+                        if (command.description) {
+                            output += ": " + command.description;
+                        }
+
+                        output += "</li>";
+                    }
+                }
+
+                output += "</ul>";
+                return output;
+            }
         }
-    }
+    };
 
     socket.on("chatMessage", function(message) {
         var messagePieces = message.split(" ");
