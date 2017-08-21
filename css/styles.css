@@ -40,7 +40,7 @@ input {
 }
 
 #chat {
-	color: cyan;
+	color: #00f991;
 	border: 1px solid white;
 	display: table;
 	width: 70%;
