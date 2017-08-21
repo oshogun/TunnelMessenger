@@ -4,7 +4,7 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 var path = require('path');
 var bodyParser = require("body-parser");
-var allowedFolders = ["css", "js", "lib"];
+var allowedFolders = ["public","css", "js", "lib"];
 var port = 3000;
 
 var users = {};
@@ -161,6 +161,10 @@ io.on("connection", function(socket) {
                 output += "</ul>";
                 return output;
             }
+        },
+        "/smash": {
+       		"result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
+      		"description":"Lets the user smash"
         }
     };
 

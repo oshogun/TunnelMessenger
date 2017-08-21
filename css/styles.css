@@ -2,6 +2,7 @@ html, body {
 	height: 99%;
 	color: #2d2d1b;
 	background-color: #121314;
+	background-image: url("../public/map.bmp");
 }
 
 body {
@@ -16,7 +17,7 @@ input {
 	padding: 10px;
 	border: none;
 	color: white;
-	background-color: #660066;
+	background-color: rgba(15, 1, 94,0.8);
 }
 
 #userList {
@@ -27,6 +28,7 @@ input {
 	height: 100%;
 	width: 29%;
 	left:100%;
+	background-color: rgba(0, 0, 0, 0.7);
 }
 #onlineHeader {
 	border-bottom: 1px solid #DDD;
@@ -44,6 +46,7 @@ input {
 	display: table;
 	height: 100%;
 	width: 70%;
+	background-color: rgba(0, 0, 0,0.7);
 }
 
 .button {
