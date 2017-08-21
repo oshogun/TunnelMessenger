@@ -1,6 +1,6 @@
 html, body {
 	height: 99%;
-	color: #2d2d1b;
+	color: #f4dc42;
 	background-color: #121314;
 	background-image: url("../public/map.bmp");
 }
@@ -137,7 +137,7 @@ span.collumn > * {
 
 .messageBlock .content {
 	padding-left: 20px;
-	color: #00ff99;
+	color: #f4dc42;
 	overflow-wrap: break-word;
 	word-wrap: break-word;
 	word-break: break-all;

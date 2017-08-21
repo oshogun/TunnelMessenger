@@ -36,7 +36,7 @@ $(document).ready(function() {
             socket.emit("isTyping");
             setTimeout(function(){
                 socket.emit("stoppedTyping");
-            }, 1000);
+            }, 3000);
         }
     });
 
