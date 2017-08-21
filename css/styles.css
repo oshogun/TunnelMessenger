@@ -40,11 +40,9 @@ input {
 }
 
 #chat {
-	float: left;
 	color: cyan;
 	border: 1px solid white;
 	display: table;
-	height: 100%;
 	width: 70%;
 	background-color: rgba(0, 0, 0,0.7);
 }
@@ -100,6 +98,11 @@ span.collumn > * {
 	padding: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
+}
+
+#chatBox {
+	height: 100%;
+	overflow-y: scroll;
 }
 
 #footer {

@@ -10,9 +10,12 @@ $(document).ready(function() {
     console.log("Server running.");
 
     let socket = io();
-    let chat = new Chat("Chat #1", [], $("#display").get(0));
+    let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
     let defaultTitle = document.title;
     let unreadMessages = 0;
+
+    $("#chat").css("height", $("body").height());
+    $("#chatBox").css("max-height", $("#display").height());
 
     $("#sendMessage").click(function(){
         socket.emit("chatMessage", $("#messageBox").val());
@@ -46,7 +49,7 @@ $(document).ready(function() {
 
     function processMessage(name: string, content: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
-            dummyUsers[name] = new User(name, name + " da Silva", name + "@baidu.com");
+            dummyUsers[name] = new User(name, name + " da Silva", name + "@chatBox.com");
         }
 
         // TODO: handle different types of messages
@@ -54,7 +57,7 @@ $(document).ready(function() {
         let message = new TextMessage(content, dummyUsers[name], new Date());
        
         chat.addMessage(message);
-        $("html, body").scrollTop($(document).height());
+        $("#chatBox").scrollTop(1e10);
     }
 
     socket.on("menu", function(id) {
