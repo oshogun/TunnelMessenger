@@ -83,6 +83,21 @@ io.on("connection", function(socket) {
         return command.substr(command.indexOf(":") + 2);
     }
 
+    function changeNickCallback(nick) {
+        if (nick != null && nick != "") {
+            // update the list of nicks
+            for (var i in nicks) {
+                if(nicks[i] == users[socket.id]) {
+                    nicks[i] = nick;
+                }
+            }
+            // update the actual user's nick
+            users[socket.id] = sanitizeInput(nick);
+            // inform other clients
+            io.emit("nick changed", nicks);
+        }
+    }
+
     var commands = {
         "/github": {
             "broadcast": true,
@@ -109,48 +124,55 @@ io.on("connection", function(socket) {
         		zoeira = false;
         		return "TEXT: zoeira mode aborted";
         	}
+        },
+        "/nick": {
+            "broadcast": false,
+            "parameters": 1,
+            "result": changeNickCallback
         }
     }
 
     socket.on("chatMessage", function(message) {
-        var isValidCommand = commands.hasOwnProperty(message);
-        var command = commands[message];
+        var messagePieces = message.split(" ");
+        var isValidCommand = commands.hasOwnProperty(messagePieces[0]);
+        var command = commands[messagePieces[0]];
         var broadcast = isValidCommand ? command.broadcast : true;
 
-        message = "TEXT: " + sanitizeInput(message);
-        sendToSender("sendMessage", message);
+        var outputMessage = "TEXT: " + sanitizeInput(message);
+        sendToSender("sendMessage", outputMessage);
 
         if (broadcast) {
-            sendToOthers("chatMessage", message);
+            sendToOthers("chatMessage", outputMessage);
         }
 
         if (isValidCommand) {
-            var result = command.result;
-            var output = (result instanceof Function) ? result() : result;
+            if (command.hasOwnProperty("parameters")) {
+                if (command.parameters != messagePieces.length - 1) {
+                    serverBroadcast("TEXT: expected " + command.parameters + " parameters");
+                    return;
+                }
+            }
 
-            if (commandType(output) == "MENU") {
-                socket.emit("menu", commandContent(output));
+            var result = command.result;
+            var output;
+            if (result instanceof Function) {
+                output = result.apply(null, messagePieces.slice(1));
             } else {
-                serverBroadcast(output);
+                output = result;
+            }
+
+            if (typeof output != "undefined") {
+                if (commandType(output) == "MENU") {
+                    socket.emit("menu", commandContent(output));
+                } else {
+                    serverBroadcast(output);
+                }
             }
         }
     });
 
     // update user nicknames on change of nick
-    socket.on("changeNick", function(nick){
-        if (nick != null && nick != "") {
-            // update the list of nicks
-            for (var i in nicks) {
-                if(nicks[i] == users[socket.id]) {
-                    nicks[i] = nick;
-                }
-            }
-            // update the actual user's nick
-            users[socket.id] = sanitizeInput(nick);
-            // inform other clients
-            io.emit("nick changed", nicks);
-        }
-    });
+    socket.on("changeNick", changeNickCallback);
 
     socket.on("disconnect", function(){
         connectedUsers--; // decrement the connected users variable
