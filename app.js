@@ -11,6 +11,8 @@ var users = {};
 var nicks = [];
 var connectedUsers = 0;
 
+var zoeira = false;
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -52,7 +54,11 @@ io.on("connection", function(socket) {
     console.log('A user has connected. Users online: ' + connectedUsers);
 
     function sanitizeInput(content) {
-        return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    	if(!zoeira) {
+        	return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    	} else {
+    		return content;
+    	}
     }
 
     function sendToSender(type/*, ...arguments */) {
@@ -91,6 +97,18 @@ io.on("connection", function(socket) {
             "result": function() {
                 return "TEXT: " + users[socket.id]
             }
+        },
+        "/zoeira_enable": {
+        	"result": function() {
+        		zoeira = true;
+        		return "TEXT: zoeira mode ENGAGED";
+        	}
+        },
+        "/zoeira_disable": {
+        	"result": function() {
+        		zoeira = false;
+        		return "TEXT: zoeira mode aborted";
+        	}
         }
     }
 
