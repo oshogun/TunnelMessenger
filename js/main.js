@@ -1,1 +1,222 @@
-define("Profile",["require","exports"],function(e,t){"use strict";t.__esModule=!0;var n=function(){function t(e,t,n){this.nickname=e,this.fullName=t,this.email=n,this.subnick=""}return t.prototype.getNickname=function(){return this.nickname},t.prototype.getFullName=function(){return this.fullName},t.prototype.getEmail=function(){return this.email},t.prototype.getSubnick=function(){return this.subnick},t.prototype.display=function(e){e.innerHTML=this.nickname},t.prototype.registerUser=function(){var t=e("mysql").createConnection({host:"localhost",user:"labsec",password:"labsec",database:"TunnelMessenger"});t.connect();var n="INSERT INTO users(username, nickname, subnick, fullName, email)                     VALUES("+this.nickname+","+this.nickname+","+this.subnick+",                     "+this.email+")";t.query(n,function(e){if(e)throw e;console.log(n)}),t.end},t}();t.User=n}),define("Message",["require","exports"],function(e,t){"use strict";t.__esModule=!0;var n=function(){function e(e,t,n){this.content=e,this.author=t,this.datetime=n}return e.prototype.display=function(e){e.innerHTML=this.content},e.prototype.getAuthor=function(){return this.author},e.prototype.getDatetime=function(){return this.datetime},e.prototype.getContent=function(){return this.content},e}();t.TextMessage=n}),define("Utils",["require","exports"],function(e,t){"use strict";t.__esModule=!0;!function(e){e.create=function(e,t){var n=document.createElement(e);return t&&this.foreach(t,function(e,t){"click"==e?n.addEventListener("click",t):n[e]=t}),n},e.foreach=function(e,t){for(var n in e)if(e.hasOwnProperty(n)&&!1===t(n,e[n]))break}}(t.utils||(t.utils={}))}),define("Chat",["require","exports","Utils"],function(e,t,n){"use strict";t.__esModule=!0;var s=function(){function e(e,t,n){this.messages=[],this.name=e,this.users=t,this.node=n}return e.prototype.addMessage=function(e){var t=this.messages[this.messages.length-1];this.messages.push(e),t&&e.getAuthor()==t.getAuthor()||this.spawnMessageBlock(),this.mergeWithLastBlock(e)},e.prototype.spawnMessageBlock=function(){var e=this.messages[this.messages.length-1],t=n.utils.create("div",{className:"messageBlock"}),s=n.utils.create("div",{className:"author"});e.getAuthor().display(s),t.appendChild(s),this.node.appendChild(t),this.lastMessageBlock=t},e.prototype.mergeWithLastBlock=function(e){var t=n.utils.create("div",{className:"content"});e.display(t),this.lastMessageBlock.appendChild(t)},e}();t.Chat=s}),define("main",["require","exports","Chat","Message","Profile"],function(e,t,n,s,i){"use strict";t.__esModule=!0,$(document).ready(function(){function e(e,t){r.hasOwnProperty(e)||(r[e]=new i.User(e,e+" da Silva",e+"@chatBox.com")),t=t.substr(t.indexOf(":")+2);var n=new s.TextMessage(t,r[e],new Date);o.addMessage(n),$("#chatBox").scrollTop(1e10)}console.log("Server running.");var t=io(),o=new n.Chat("Chat #1",[],$("#chatBox").get(0)),a=document.title,c=0;$("#chat").css("height",$("body").height()),$("#chatBox").css("max-height",$("#display").height()),$("#sendMessage").click(function(){return t.emit("chatMessage",$("#messageBox").val()),$("#messageBox").val(""),!1}),$("#nicknameButton").click(function(){return t.emit("changeNick",$("#nicknameBox").val()),$("#nicknameBox").val(""),!1}),$("#messageBox").keyup(function(e){13==e.keyCode?$("#sendMessage").click():(t.emit("isTyping"),setTimeout(function(){t.emit("stoppedTyping")},3e3))});var r={};$(document).focus(function(){c=0,document.title=a}),t.on("menu",function(e){console.log("[OPEN MENU]",e)}),t.on("sendMessage",e),t.on("chatMessage",function(t,n){document.hasFocus()||(c++,document.title="("+c+") "+a),e(t,n)}),t.on("isTyping",function(e){$("#typingCell").html(e+" is typing...")}),t.on("stoppedTyping",function(){$("#typingCell").html("")}),t.on("changeNick",function(e,t){var n="<ol>";console.log("[NICKS]",t);for(var s=0,i=t;s<i.length;s++)n+="<li>"+i[s][1]+"</li>";n+="</ol>",console.log("[HTML]",n),$("#list").html(n)})})});
+define("shared/Profile", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var User = (function () {
+        function User(nickname, fullName, email) {
+            this.nickname = nickname;
+            this.fullName = fullName;
+            this.email = email;
+            this.subnick = "";
+        }
+        User.prototype.getNickname = function () {
+            return this.nickname;
+        };
+        User.prototype.getFullName = function () {
+            return this.fullName;
+        };
+        User.prototype.getEmail = function () {
+            return this.email;
+        };
+        User.prototype.getSubnick = function () {
+            return this.subnick;
+        };
+        User.prototype.display = function (node) {
+            node.innerHTML = this.nickname;
+        };
+        User.prototype.registerUser = function () {
+            var mysql = require("mysql");
+            var connection = mysql.createConnection({
+                host: 'localhost',
+                user: 'labsec',
+                password: 'labsec',
+                database: 'TunnelMessenger'
+            });
+            connection.connect();
+            var query = "INSERT INTO users(username, nickname, subnick, fullName, email)\
+                     VALUES(" + this.nickname + "," + this.nickname + "," + this.subnick + ",\
+                     " + this.email + ")";
+            connection.query(query, function (error) {
+                if (error) {
+                    throw error;
+                }
+                console.log(query);
+            });
+            connection.end;
+        };
+        return User;
+    }());
+    exports.User = User;
+});
+define("shared/Message", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var TextMessage = (function () {
+        function TextMessage(content, author, datetime) {
+            this.content = content;
+            this.author = author;
+            this.datetime = datetime;
+        }
+        TextMessage.prototype.display = function (node) {
+            node.innerHTML = this.content;
+        };
+        TextMessage.prototype.getAuthor = function () {
+            return this.author;
+        };
+        TextMessage.prototype.getDatetime = function () {
+            return this.datetime;
+        };
+        TextMessage.prototype.getContent = function () {
+            return this.content;
+        };
+        return TextMessage;
+    }());
+    exports.TextMessage = TextMessage;
+});
+define("shared/Utils", ["require", "exports"], function (require, exports) {
+    "use strict";
+    exports.__esModule = true;
+    var utils;
+    (function (utils) {
+        function create(tag, props) {
+            var result = document.createElement(tag);
+            if (props) {
+                this.foreach(props, function (key, value) {
+                    if (key == "click") {
+                        result.addEventListener("click", value);
+                    }
+                    else {
+                        result[key] = value;
+                    }
+                });
+            }
+            return result;
+        }
+        utils.create = create;
+        function foreach(obj, callback) {
+            for (var i in obj) {
+                if (obj.hasOwnProperty(i)) {
+                    if (callback(i, obj[i]) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+        utils.foreach = foreach;
+    })(utils = exports.utils || (exports.utils = {}));
+});
+define("shared/Chat", ["require", "exports", "shared/Utils"], function (require, exports, Utils_1) {
+    "use strict";
+    exports.__esModule = true;
+    var Chat = (function () {
+        function Chat(name, users, node) {
+            this.messages = [];
+            this.name = name;
+            this.users = users;
+            this.node = node;
+        }
+        Chat.prototype.addMessage = function (message) {
+            var previousMessage = this.messages[this.messages.length - 1];
+            this.messages.push(message);
+            if (!previousMessage || message.getAuthor() != previousMessage.getAuthor()) {
+                this.spawnMessageBlock();
+            }
+            this.mergeWithLastBlock(message);
+        };
+        Chat.prototype.spawnMessageBlock = function () {
+            var lastMessage = this.messages[this.messages.length - 1];
+            var container = Utils_1.utils.create("div", {
+                className: "messageBlock"
+            });
+            var authorContainer = Utils_1.utils.create("div", {
+                className: "author"
+            });
+            lastMessage.getAuthor().display(authorContainer);
+            container.appendChild(authorContainer);
+            this.node.appendChild(container);
+            this.lastMessageBlock = container;
+        };
+        Chat.prototype.mergeWithLastBlock = function (message) {
+            var contentContainer = Utils_1.utils.create("div", {
+                className: "content"
+            });
+            message.display(contentContainer);
+            this.lastMessageBlock.appendChild(contentContainer);
+        };
+        return Chat;
+    }());
+    exports.Chat = Chat;
+});
+define("frontend/main", ["require", "exports", "shared/Chat", "shared/Message", "shared/Profile"], function (require, exports, Chat_1, Message_1, Profile_1) {
+    "use strict";
+    exports.__esModule = true;
+    $(document).ready(function () {
+        console.log("Server running.");
+        var socket = io();
+        var chat = new Chat_1.Chat("Chat #1", [], $("#chatBox").get(0));
+        var defaultTitle = document.title;
+        var unreadMessages = 0;
+        $("#chat").css("height", $("body").height());
+        $("#chatBox").css("max-height", $("#display").height());
+        $("#sendMessage").click(function () {
+            socket.emit("chatMessage", $("#messageBox").val());
+            $("#messageBox").val("");
+            return false;
+        });
+        $("#nicknameButton").click(function () {
+            socket.emit("changeNick", $("#nicknameBox").val());
+            $("#nicknameBox").val("");
+            return false;
+        });
+        $("#messageBox").keyup(function (e) {
+            if (e.keyCode == 13) {
+                $("#sendMessage").click();
+            }
+            else {
+                socket.emit("isTyping");
+                setTimeout(function () {
+                    socket.emit("stoppedTyping");
+                }, 3000);
+            }
+        });
+        var dummyUsers = {};
+        $(document).focus(function () {
+            unreadMessages = 0;
+            document.title = defaultTitle;
+        });
+        function processMessage(name, content) {
+            if (!dummyUsers.hasOwnProperty(name)) {
+                dummyUsers[name] = new Profile_1.User(name, name + " da Silva", name + "@chatBox.com");
+            }
+            content = content.substr(content.indexOf(":") + 2);
+            var message = new Message_1.TextMessage(content, dummyUsers[name], new Date());
+            chat.addMessage(message);
+            $("#chatBox").scrollTop(1e10);
+        }
+        socket.on("menu", function (id) {
+            console.log("[OPEN MENU]", id);
+        });
+        socket.on("sendMessage", processMessage);
+        socket.on("chatMessage", function (name, content) {
+            if (!document.hasFocus()) {
+                unreadMessages++;
+                document.title = "(" + unreadMessages + ") " + defaultTitle;
+            }
+            processMessage(name, content);
+        });
+        socket.on("isTyping", function (user) {
+            $("#typingCell").html(user + " is typing...");
+        });
+        socket.on("stoppedTyping", function () {
+            $("#typingCell").html("");
+        });
+        socket.on("changeNick", function (source, nicks) {
+            var nickList = "<ol>";
+            for (var _i = 0, nicks_1 = nicks; _i < nicks_1.length; _i++) {
+                var pair = nicks_1[_i];
+                nickList += "<li>" + pair[1] + "</li>";
+            }
+            nickList += "</ol>";
+            $("#list").html(nickList);
+        });
+    });
+});

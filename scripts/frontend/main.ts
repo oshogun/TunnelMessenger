@@ -1,8 +1,8 @@
-/// <reference path="defs/jQuery.d.ts" />
+/// <reference path="../defs/jQuery.d.ts" />
 
-import {Chat} from "./Chat"
-import {TextMessage} from "./Message"
-import {User} from "./Profile"
+import {Chat} from "../shared/Chat"
+import {TextMessage} from "../shared/Message"
+import {User} from "../shared/Profile"
 
 declare var io;
 

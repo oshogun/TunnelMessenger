@@ -11,37 +11,65 @@ TESTS           :=$(TS)/tests
 INDEX           :=index.html
 LIBSFILE        :=libs.txt
 PRIORITYFILE    :=priority.txt
-JSBASE          :=base.js
-JSCOMPRESSED    :=main.js
+JSBASE          :=$(JS)/base.js
+JSBACKEND       :=app.js
+JSFRONTEND      :=$(JS)/main.js
 JSTESTS         :=tests.js
 
-COMPRESS        :=1
+COMPRESS        :=0
 
-TSFILES         :=$(wildcard $(TS)/*.ts)
+SHAREDFILES     :=$(wildcard $(TS)/shared/*.ts)
+BACKENDFILES    :=$(wildcard $(TS)/backend/*.ts)
+FRONTENDFILES   :=$(wildcard $(TS)/frontend/*.ts)
 TSTESTFILES     :=$(wildcard $(TESTS)/*.ts)
 ORIGNAMES       :=$(shell cat $(LIBSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
 LIBNAMES        :=$(patsubst %, $(LIB)/%, $(ORIGNAMES))
 
-.PHONY: all dirs libs languages machines raw simple tests
+BACKENDFILES += $(SHAREDFILES)
+FRONTENDFILES += $(SHAREDFILES)
 
-all: dirs libs languages machines
+.PHONY: all dirs libs languages raw simple tests
+
+all: dirs libs languages setup frontend backend finish
+
+setup:
+	@touch $(JSBASE)
+
+finish:
+	@echo "[ cleanup ]"
+	@rm $(JSBASE)
+
+backend:
+	@echo "[ backend ]"
 	@echo "[.ts ⟶ .js]"
-	@if [ "$(TSFILES)" = "" ]; then \
-		touch $(JS)/$(JSBASE); \
-		truncate -s 0 $(JS)/$(JSBASE); \
-	else\
-		tsc --removeComments --noImplicitReturns --module amd --outFile $(JS)/$(JSBASE) $(TSFILES); \
+	@truncate -s 0 $(JSBASE)
+	@if [ "$(BACKENDFILES)" != "" ]; then \
+		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(BACKENDFILES); \
 	fi
 
 	@if [ "$(COMPRESS)" = "1" ]; then \
-		echo "[minifying] $(JS)/$(JSBASE) ⟶ $(JS)/$(JSCOMPRESSED)"; \
-		uglifyjs $(JS)/$(JSBASE) --compress --mangle > $(JS)/$(JSCOMPRESSED) 2> /dev/null; \
+		echo "[minifying] $(JSBASE) ⟶ $(JSBACKEND)"; \
+		uglifyjs $(JSBASE) --compress --mangle > $(JSBACKEND) 2> /dev/null; \
 	else\
-		echo "[ copying ] $(JS)/$(JSBASE) ⟶ $(JS)/$(JSCOMPRESSED)"; \
-		cp $(JS)/$(JSBASE) $(JS)/$(JSCOMPRESSED); \
+		echo "[ copying ] $(JSBASE) ⟶ $(JSBACKEND)"; \
+		cp $(JSBASE) $(JSBACKEND); \
 	fi
 
-	@rm $(JS)/$(JSBASE)
+frontend:
+	@echo "[front end]"
+	@echo "[.ts ⟶ .js]"
+	@truncate -s 0 $(JSBASE)
+	@if [ "$(FRONTENDFILES)" != "" ]; then \
+		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(FRONTENDFILES); \
+	fi
+
+	@if [ "$(COMPRESS)" = "1" ]; then \
+		echo "[minifying] $(JSBASE) ⟶ $(JSFRONTEND)"; \
+		uglifyjs $(JSBASE) --compress --mangle > $(JSFRONTEND) 2> /dev/null; \
+	else\
+		echo "[ copying ] $(JSBASE) ⟶ $(JSFRONTEND)"; \
+		cp $(JSBASE) $(JSFRONTEND); \
+	fi
 
 install:
 	@npm install
@@ -59,10 +87,6 @@ libs: | $(LIBNAMES)
 
 raw: COMPRESS :=0
 raw: all
-
-simple:
-	@tsc --module amd --outFile $(JS)/$(JSBASE) $(TSFILES)
-	@cp $(JS)/$(JSBASE) $(JS)/$(JSCOMPRESSED)
 
 $(CSS) $(JS) $(LIB) $(TS):
 	@echo "[  mkdir  ] $@"
