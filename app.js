@@ -13,6 +13,11 @@ var connectedUsers = 0;
 
 var zoeira = false;
 
+if (process.argv.length > 2 && process.argv[2] == 1) {
+    zoeira = true;
+    console.log("zoeira mode ENGAGED");
+}
+
 app.use(bodyParser.urlencoded({
     extended: true
 }));
@@ -26,6 +31,7 @@ app.get("/TunnelMessenger", function(request, response) {
 app.post("/login", function(request, response) {
     response.sendFile(__dirname + "/public/index.html");
 });
+
 app.get("/register", function(request,response){
     response.sendFile(__dirname + "/public/register.html");
 });
@@ -45,30 +51,36 @@ io.on("connection", function(socket) {
     connectedUsers++;
 
     users[socket.id] = "anon" + (nicks.length + 1);
-    nicks.push(users[socket.id]);
-    io.emit("nick changed", nicks);
-    for(var i = 0; i < nicks.length; i++) {
-        console.log(nicks[i] +  " ");
-    }
+    nicks.push([socket.id, users[socket.id]]);
+    broadcast("changeNick", nicks);
 
-    console.log('A user has connected. Users online: ' + connectedUsers);
+    console.log("A user has connected. Users online: " + connectedUsers);
 
     function sanitizeInput(content) {
-    	if(!zoeira) {
-        	return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    	} else {
-    		return content;
-    	}
+        if(!zoeira) {
+            return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        } else {
+            return content;
+        }
+    }
+
+    function prepareArgs(argList, offset) {
+        return Array.prototype.slice.call(argList, offset);
     }
 
     function sendToSender(type/*, ...arguments */) {
-        var otherArgs = Array.prototype.slice.call(arguments, 1);
+        var otherArgs = prepareArgs(arguments, 1);
         socket.emit.apply(socket, [type, users[socket.id]].concat(otherArgs));
     }
 
     function sendToOthers(type/*, ...arguments */) {
-        var otherArgs = Array.prototype.slice.call(arguments, 1);
+        var otherArgs = prepareArgs(arguments, 1);
         socket.broadcast.emit.apply(socket.broadcast, [type, users[socket.id]].concat(otherArgs));
+    }
+
+    function broadcast(type/*, ...arguments */) {
+        var otherArgs = prepareArgs(arguments, 1);
+        io.emit.apply(io, [type, users[socket.id]].concat(otherArgs));
     }
 
     function serverBroadcast(message) {
@@ -84,58 +96,25 @@ io.on("connection", function(socket) {
     }
 
     function changeNickCallback(nick) {
+        nick = sanitizeInput(nick);
+
         if (nick != null && nick != "") {
             // update the list of nicks
-            for (var i in nicks) {
-                if(nicks[i] == users[socket.id]) {
-                    nicks[i] = nick;
+            for (var i = 0; i < nicks.length; i++) {
+                if (nicks[i][0] == socket.id) {
+                    nicks[i][1] = nick;
                 }
             }
+
             // update the actual user's nick
-            users[socket.id] = sanitizeInput(nick);
+            users[socket.id] = nick;
+
             // inform other clients
-            io.emit("nick changed", nicks);
+            broadcast("changeNick", nicks);
         }
     }
 
     var commands = {
-        "/github": {
-            "broadcast": true,
-            "description": "Displays the URL of this project's github page",
-            "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
-        },
-        "/settings": {
-            "broadcast": false,
-            "description": "Displays a settings menu",
-            "result": "MENU: settings"
-        },
-        "/whoami": {
-            "broadcast": true,
-            "description": "Shows your nickname",
-            "result": function() {
-                return "TEXT: " + users[socket.id]
-            }
-        },
-        "/zoeira_enable": {
-            "description": "Enables the zoeira mode",
-        	"result": function() {
-        		zoeira = true;
-        		return "TEXT: zoeira mode ENGAGED";
-        	}
-        },
-        "/zoeira_disable": {
-            "description": "Disables the zoeira mode",
-        	"result": function() {
-        		zoeira = false;
-        		return "TEXT: zoeira mode aborted";
-        	}
-        },
-        "/nick": {
-            "broadcast": false,
-            "description": "Changes the nickname of the user",
-            "parameters": 1,
-            "result": changeNickCallback
-        },
         "/help": {
             "broadcast": false,
             "description": "Lists all available commands",
@@ -162,10 +141,47 @@ io.on("connection", function(socket) {
                 return output;
             }
         },
+        "/github": {
+            "broadcast": true,
+            "description": "Displays the URL of this project's github page",
+            "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
+        },
+        "/nick": {
+            "broadcast": false,
+            "description": "Changes the nickname of the user",
+            "parameters": 1,
+            "result": changeNickCallback
+        },
+        "/settings": {
+            "broadcast": false,
+            "description": "Displays a settings menu",
+            "result": "MENU: settings"
+        },
         "/smash": {
-       		"result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
-      		"description":"Lets the user smash"
-        }
+            "result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
+            "description":"Lets the user smash"
+        },
+        "/whoami": {
+            "broadcast": true,
+            "description": "Shows your nickname",
+            "result": function() {
+                return "TEXT: " + users[socket.id]
+            }
+        },
+        "/zoeira_disable": {
+            "description": "Disables the zoeira mode",
+            "result": function() {
+                zoeira = false;
+                return "TEXT: zoeira mode aborted";
+            }
+        },
+        "/zoeira_enable": {
+            "description": "Enables the zoeira mode",
+            "result": function() {
+                zoeira = true;
+                return "TEXT: zoeira mode ENGAGED";
+            }
+        },
     };
 
     socket.on("chatMessage", function(message) {
@@ -213,14 +229,16 @@ io.on("connection", function(socket) {
     socket.on("disconnect", function(){
         connectedUsers--; // decrement the connected users variable
         // remove the user from the nicknames list
-        for(var i in nicks) {
-            if(nicks[i] == users[socket.id]) {
-                nicks.splice(i,1);
+        for (var i = 0; i < nicks.length; i++) {
+            if (nicks[i][0] == socket.id) {
+                nicks.splice(i, 1);
             }
         }
+
         console.log("A user has disconnected. Users online: " + connectedUsers);
+
         // update the nicks list on all clients
-        io.emit("nick changed", nicks);
+        broadcast("changeNick", nicks);
     });
 
     // inform other clients that someone is typing
@@ -234,7 +252,6 @@ io.on("connection", function(socket) {
     });
 });
 
-// listen to connections on port 3000
-http.listen(3000, function(){
-    console.log("listening on *:3000");
+http.listen(port, function(){
+    console.log("Listening on port " + port);
 });

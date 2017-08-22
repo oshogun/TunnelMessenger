@@ -83,12 +83,14 @@ $(document).ready(function() {
         $("#typingCell").html("");
     });
 
-    socket.on("nick changed", function(nicks) {
+    socket.on("changeNick", function(source, nicks) {
         let nickList = "<ol>";
-        for(let i = 0; i < nicks.length; i++) {
-            nickList += "\n<li>" + nicks[i] + "</li>";
+
+        for (let pair of nicks) {
+            nickList += "<li>" + pair[1] + "</li>";
         }
-        nickList += "\n<ol>";
+
+        nickList += "</ol>";
 
         $("#list").html(nickList);
     });
