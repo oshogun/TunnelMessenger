@@ -6,15 +6,17 @@ LIB             :=lib
 TS              :=scripts
 LANGFOLDER      :=languages
 TESTS           :=$(TS)/tests
+DEFS            :=$(TS)/defs
 
 # Special files
 INDEX           :=index.html
+DEFSFILE        :=defs.txt
 LIBSFILE        :=libs.txt
 PRIORITYFILE    :=priority.txt
 BACKENDFOLDER   :=$(JS)/backend/
 BACKENDMAIN     :=app.js
 JSBASE          :=$(JS)/base.js
-FRONTENDMAIN      :=$(JS)/frontend/main.js
+FRONTENDMAIN    :=$(JS)/frontend/main.js
 JSTESTS         :=tests.js
 
 COMPRESS        :=0
@@ -23,15 +25,17 @@ SHAREDFILES     :=$(wildcard $(TS)/shared/*.ts)
 BACKENDFILES    :=$(wildcard $(TS)/backend/*.ts)
 FRONTENDFILES   :=$(wildcard $(TS)/frontend/*.ts)
 TSTESTFILES     :=$(wildcard $(TESTS)/*.ts)
-ORIGNAMES       :=$(shell cat $(LIBSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
-LIBNAMES        :=$(patsubst %, $(LIB)/%, $(ORIGNAMES))
+ORIGDEFNAMES    :=$(shell cat $(DEFSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
+ORIGLIBNAMES    :=$(shell cat $(LIBSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
+DEFNAMES        :=$(patsubst %, $(DEFS)/%, $(ORIGDEFNAMES))
+LIBNAMES        :=$(patsubst %, $(LIB)/%, $(ORIGLIBNAMES))
 
 BACKENDFILES += $(SHAREDFILES)
 FRONTENDFILES += $(SHAREDFILES)
 
 .PHONY: all install run tests dirs libs languages raw clean clean_all
 
-all: dirs libs languages $(BACKENDMAIN) $(FRONTENDMAIN)
+all: dirs defs libs languages $(BACKENDMAIN) $(FRONTENDMAIN)
 
 $(BACKENDMAIN): $(BACKENDFILES)
 	@echo "[ backend ]"
@@ -77,6 +81,8 @@ tests: all
 
 dirs: | $(CSS) $(JS) $(LIB) $(TS)
 
+defs: | $(DEFNAMES)
+
 libs: | $(LIBNAMES)
 
 raw: COMPRESS :=0
@@ -94,9 +100,18 @@ $(LIBNAMES):
 	@touch $@
 	@wget -O $@ -q $(URL)
 
+$(DEFNAMES):
+	$(eval PURENAME=$(patsubst $(DEFS)/%, %, $@))
+	$(eval URL=$(shell cat $(DEFSFILE) | grep "^$(PURENAME):" | sed "s/^\([^:]\+\): \(.*\)/\2/"))
+	@#" # syntax highlight fix
+	@echo "[   def   ] $(PURENAME)"
+	@touch $@
+	@wget -O $@ -q $(URL)
+
 clean:
 	@rm -rf js/*
 	@rm $(BACKENDMAIN)
 
 clean_all: clean
+	@rm -rf $(DEFS)/*
 	@rm -rf node_modules
