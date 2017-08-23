@@ -88,7 +88,7 @@ libs: | $(LIBNAMES)
 raw: COMPRESS :=0
 raw: all
 
-$(CSS) $(JS) $(LIB) $(TS):
+$(CSS) $(JS) $(LIB) $(TS) $(TS)/defs:
 	@echo "[  mkdir  ] $@"
 	@mkdir -p $@
 
@@ -100,7 +100,7 @@ $(LIBNAMES):
 	@touch $@
 	@wget -O $@ -q $(URL)
 
-$(DEFNAMES):
+$(DEFNAMES): | $(TS)/defs
 	$(eval PURENAME=$(patsubst $(DEFS)/%, %, $@))
 	$(eval URL=$(shell cat $(DEFSFILE) | grep "^$(PURENAME):" | sed "s/^\([^:]\+\): \(.*\)/\2/"))
 	@#" # syntax highlight fix
@@ -110,7 +110,7 @@ $(DEFNAMES):
 
 clean:
 	@rm -rf js/*
-	@rm $(BACKENDMAIN)
+	@rm -f $(BACKENDMAIN)
 
 clean_all: clean
 	@rm -rf $(DEFS)/*
