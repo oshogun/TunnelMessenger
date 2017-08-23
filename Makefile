@@ -14,7 +14,7 @@ PRIORITYFILE    :=priority.txt
 BACKENDFOLDER   :=$(JS)/backend/
 BACKENDMAIN     :=app.js
 JSBASE          :=$(JS)/base.js
-JSFRONTEND      :=$(JS)/frontend/main.js
+FRONTENDMAIN      :=$(JS)/frontend/main.js
 JSTESTS         :=tests.js
 
 COMPRESS        :=0
@@ -29,45 +29,41 @@ LIBNAMES        :=$(patsubst %, $(LIB)/%, $(ORIGNAMES))
 BACKENDFILES += $(SHAREDFILES)
 FRONTENDFILES += $(SHAREDFILES)
 
-.PHONY: all setup finish backend frontend install run tests	dirs libs languages raw clean clean_all
+.PHONY: all install run tests dirs libs languages raw clean clean_all
 
-all: dirs libs languages setup backend frontend finish
+all: dirs libs languages $(BACKENDMAIN) $(FRONTENDMAIN)
 
-setup:
-	@touch $(JSBASE)
-
-finish:
-	@echo "[ cleanup ]"
-	@rm $(JSBASE)
-
-backend:
+$(BACKENDMAIN): $(BACKENDFILES)
 	@echo "[ backend ]"
 	@echo "[.ts ⟶ .js] translating backend scripts"
-	@truncate -s 0 $(JSBASE)
 	@if [ "$(BACKENDFILES)" != "" ]; then \
 		tsc --removeComments --noImplicitReturns --outDir $(JS) $(BACKENDFILES); \
 	fi
 
-	@echo "[  alias  ] $(BACKENDFOLDER)/$(BACKENDMAIN) ⟶ $(BACKENDMAIN)"a
+	@echo "[  alias  ] $(BACKENDFOLDER)$(BACKENDMAIN) ⟶ $(BACKENDMAIN)"
 	@rm -f $(BACKENDMAIN)
 	@ln -s $(BACKENDFOLDER)/$(BACKENDMAIN) $(BACKENDMAIN)
 
-frontend:
+$(FRONTENDMAIN): $(FRONTENDFILES)
 	@echo "[front end]"
 	@mkdir -p $(JS)/frontend
-	@echo "[.ts ⟶ .js] translating frontend scripts"
+	@touch $(JSBASE)
 	@truncate -s 0 $(JSBASE)
+
+	@echo "[.ts ⟶ .js] translating frontend scripts"
 	@if [ "$(FRONTENDFILES)" != "" ]; then \
 		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(FRONTENDFILES); \
 	fi
 
 	@if [ "$(COMPRESS)" = "1" ]; then \
-		echo "[minifying] $(JSBASE) ⟶ $(JSFRONTEND)"; \
-		uglifyjs $(JSBASE) --compress --mangle > $(JSFRONTEND) 2> /dev/null; \
+		echo "[minifying] $(JSBASE) ⟶ $(FRONTENDMAIN)"; \
+		uglifyjs $(JSBASE) --compress --mangle > $(FRONTENDMAIN) 2> /dev/null; \
 	else\
-		echo "[ copying ] $(JSBASE) ⟶ $(JSFRONTEND)"; \
-		cp $(JSBASE) $(JSFRONTEND); \
+		echo "[ copying ] $(JSBASE) ⟶ $(FRONTENDMAIN)"; \
+		cp $(JSBASE) $(FRONTENDMAIN); \
 	fi
+
+	@rm $(JSBASE)
 
 install:
 	@npm install
