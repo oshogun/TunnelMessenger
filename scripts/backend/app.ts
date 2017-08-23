@@ -43,6 +43,10 @@ app.get("/register", function(request,response){
     response.sendFile(root + "/public/register.html");
 });
 
+app.get("/frontend/main.js", function(request,response){
+    response.sendFile(root + "/js/frontend/main.js");
+});
+
 for (let i = 0; i < allowedFolders.length; i++) {
     app.get("/" + allowedFolders[i] + "/*", function(request, response) {
         response.sendFile(root + request.url);

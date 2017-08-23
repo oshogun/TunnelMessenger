@@ -11,8 +11,9 @@ TESTS           :=$(TS)/tests
 INDEX           :=index.html
 LIBSFILE        :=libs.txt
 PRIORITYFILE    :=priority.txt
+BACKENDFOLDER   :=$(JS)/backend/
+BACKENDMAIN     :=app.js
 JSBASE          :=$(JS)/base.js
-# JSBACKEND       :=app.js
 JSFRONTEND      :=$(JS)/frontend/main.js
 JSTESTS         :=tests.js
 
@@ -28,9 +29,9 @@ LIBNAMES        :=$(patsubst %, $(LIB)/%, $(ORIGNAMES))
 BACKENDFILES += $(SHAREDFILES)
 FRONTENDFILES += $(SHAREDFILES)
 
-.PHONY: all dirs libs languages raw simple tests
+.PHONY: all setup finish backend frontend install run tests	dirs libs languages raw clean clean_all
 
-all: dirs libs languages setup frontend finish
+all: dirs libs languages setup backend frontend finish
 
 setup:
 	@touch $(JSBASE)
@@ -41,16 +42,20 @@ finish:
 
 backend:
 	@echo "[ backend ]"
-	@echo "[.ts ⟶ .js]"
+	@echo "[.ts ⟶ .js] translating backend scripts"
 	@truncate -s 0 $(JSBASE)
 	@if [ "$(BACKENDFILES)" != "" ]; then \
 		tsc --removeComments --noImplicitReturns --outDir $(JS) $(BACKENDFILES); \
 	fi
 
+	@echo "[  alias  ] $(BACKENDFOLDER)/$(BACKENDMAIN) ⟶ $(BACKENDMAIN)"a
+	@rm -f $(BACKENDMAIN)
+	@ln -s $(BACKENDFOLDER)/$(BACKENDMAIN) $(BACKENDMAIN)
+
 frontend:
 	@echo "[front end]"
 	@mkdir -p $(JS)/frontend
-	@echo "[.ts ⟶ .js]"
+	@echo "[.ts ⟶ .js] translating frontend scripts"
 	@truncate -s 0 $(JSBASE)
 	@if [ "$(FRONTENDFILES)" != "" ]; then \
 		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(FRONTENDFILES); \
@@ -69,7 +74,7 @@ install:
 	@node create_tables.js
 
 run:
-	@node app.js
+	@node $(BACKENDMAIN)
 
 tests: all
 	@cp $(JS)/$(JSCOMPRESSED) $(JS)/$(JSTESTS)
@@ -95,6 +100,7 @@ $(LIBNAMES):
 
 clean:
 	@rm -rf js/*
+	@rm $(BACKENDMAIN)
 
 clean_all: clean
 	@rm -rf node_modules

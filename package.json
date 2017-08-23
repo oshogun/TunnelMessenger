@@ -6,11 +6,9 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "amd-loader": "0.0.8",
     "body-parser": "^1.17.2",
     "express": "^4.15.2",
     "mysql": "^2.14.1",
-    "requirejs": "^2.3.5",
     "socket.io": "~2.0.3"
   }
 }
