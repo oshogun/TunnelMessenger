@@ -1,7 +1,4 @@
-declare function require(name: string): any;
-declare var __dirname: string;
-declare var process;
-declare var define;
+/// <reference path="../defs/node.d.ts" />
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -20,7 +17,7 @@ let connectedUsers = 0;
 
 let zoeira = false;
 
-if (process.argv.length > 2 && process.argv[2] == 1) {
+if (process.argv.length > 2 && process.argv[2] == "1") {
     zoeira = true;
     console.log("zoeira mode ENGAGED");
 }
