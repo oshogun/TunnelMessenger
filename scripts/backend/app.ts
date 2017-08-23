@@ -3,12 +3,8 @@ declare var __dirname: string;
 declare var process;
 declare var define;
 
-let requirejs = require("requirejs");
-
-requirejs.config({
-    baseUrl: __dirname,
-    nodeRequire: require
-});
+// removes "js/backend" from the end
+let root = __dirname.split("/").slice(0, -2).join("/");
 
 let app = require('express')();
 let http = require('http').createServer(app);
@@ -36,25 +32,25 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 app.get("/TunnelMessenger", function(request, response) {
-    response.sendFile(__dirname + "/public/index.html");
+    response.sendFile(root + "/public/index.html");
 });
 
 app.post("/login", function(request, response) {
-    response.sendFile(__dirname + "/public/index.html");
+    response.sendFile(root + "/public/index.html");
 });
 
 app.get("/register", function(request,response){
-    response.sendFile(__dirname + "/public/register.html");
+    response.sendFile(root + "/public/register.html");
 });
 
 for (let i = 0; i < allowedFolders.length; i++) {
     app.get("/" + allowedFolders[i] + "/*", function(request, response) {
-        response.sendFile(__dirname + request.url);
+        response.sendFile(root + request.url);
     });
 }
 
-let UserManager = require("./rest").UserManager;
-let userManager = new UserManager(app);
+// let UserManager = require("./rest").UserManager;
+// let userManager = new UserManager(app);
 users[0] = "SERVER";
 
 io.on("connection", function(socket) {

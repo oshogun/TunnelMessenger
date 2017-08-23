@@ -12,8 +12,8 @@ INDEX           :=index.html
 LIBSFILE        :=libs.txt
 PRIORITYFILE    :=priority.txt
 JSBASE          :=$(JS)/base.js
-JSBACKEND       :=app.js
-JSFRONTEND      :=$(JS)/main.js
+# JSBACKEND       :=app.js
+JSFRONTEND      :=$(JS)/frontend/main.js
 JSTESTS         :=tests.js
 
 COMPRESS        :=0
@@ -30,7 +30,7 @@ FRONTENDFILES += $(SHAREDFILES)
 
 .PHONY: all dirs libs languages raw simple tests
 
-all: dirs libs languages setup frontend backend finish
+all: dirs libs languages setup frontend finish
 
 setup:
 	@touch $(JSBASE)
@@ -44,19 +44,12 @@ backend:
 	@echo "[.ts ⟶ .js]"
 	@truncate -s 0 $(JSBASE)
 	@if [ "$(BACKENDFILES)" != "" ]; then \
-		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(BACKENDFILES); \
-	fi
-
-	@if [ "$(COMPRESS)" = "1" ]; then \
-		echo "[minifying] $(JSBASE) ⟶ $(JSBACKEND)"; \
-		uglifyjs $(JSBASE) --compress --mangle > $(JSBACKEND) 2> /dev/null; \
-	else\
-		echo "[ copying ] $(JSBASE) ⟶ $(JSBACKEND)"; \
-		cp $(JSBASE) $(JSBACKEND); \
+		tsc --removeComments --noImplicitReturns --outDir $(JS) $(BACKENDFILES); \
 	fi
 
 frontend:
 	@echo "[front end]"
+	@mkdir -p $(JS)/frontend
 	@echo "[.ts ⟶ .js]"
 	@truncate -s 0 $(JSBASE)
 	@if [ "$(FRONTENDFILES)" != "" ]; then \
@@ -95,6 +88,13 @@ $(CSS) $(JS) $(LIB) $(TS):
 $(LIBNAMES):
 	$(eval PURENAME=$(patsubst $(LIB)/%, %, $@))
 	$(eval URL=$(shell cat $(LIBSFILE) | grep "^$(PURENAME):" | sed "s/^\([^:]\+\): \(.*\)/\2/"))
+	@#" # syntax highlight fix
 	@echo "[   lib   ] $(PURENAME)"
 	@touch $@
 	@wget -O $@ -q $(URL)
+
+clean:
+	@rm -rf js/*
+
+clean_all: clean
+	@rm -rf node_modules
