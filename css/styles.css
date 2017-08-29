@@ -1,8 +1,8 @@
 html, body {
-	height: 99%;
 	color: #f4dc42;
 	background-color: #121314;
 	background-image: url("../public/map.bmp");
+	height: 100%;
 }
 
 body {
@@ -22,8 +22,8 @@ input {
 
 #chat {
 	background-color: rgba(0, 0, 0,0.7);
+	border-right: 1px solid white;
 	color: #00f991;
-	border: 1px solid white;
 	display: flex;
 	flex-direction: column;
 	height: 100%;
@@ -53,18 +53,23 @@ input {
 
 #footer {
 	flex: 0 0 auto;
+	margin-top: 5px;
+	margin-bottom: 2px;
 }
 
-#messageBoxTable, #messageBoxRow {
-	width: 100%;
+#messageBoxWrapper {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
 }
 
-#messageBoxCell {
-	width: 70%;
+#messageBoxWrapper > * {
+	margin-right: 5px;
 }
 
 #messageBox {
-	width: 100%;
+	flex: 1 1 auto;
+	margin-left: 5px;
 }
 
 .messageBlock {
@@ -86,14 +91,14 @@ input {
 }
 
 .button {
-	border-radius: 4px;
-	cursor: pointer;
-	border: none;
-	color: white;
 	background-color: darkslategrey;
+	border: none;
+	border-radius: 4px;
+	color: white;
+	cursor: pointer;
+	display: inline-block;
 	font-size: 23px;
 	text-align: center;
-	display: inline-block;
 	transition-duration: 0.2s;
 }
 
@@ -102,14 +107,13 @@ input {
 }
 
 #userList {
-	float: right;
+	background-color: rgba(0, 0, 0, 0.7);
+	border-left: 1px solid white;
 	color: cyan;
-	border: 1px solid white;
 	display: table;
+	float: right;
 	height: 100%;
 	width: 29%;
-	left:100%;
-	background-color: rgba(0, 0, 0, 0.7);
 }
 
 #onlineHeader {
