@@ -14,8 +14,8 @@ let port = 3000;
 let users = {};
 let nicks = [];
 let connectedUsers = 0;
-
-let zoeira = false;
+let /*the*/ carnage /*begin*/ = 1200;
+let /*the*/zoeira /*begin*/ = false;
 
 if (process.argv.length > 2 && process.argv[2] == "1") {
     zoeira = true;

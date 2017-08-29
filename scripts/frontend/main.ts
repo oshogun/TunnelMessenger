@@ -11,7 +11,7 @@ $(document).ready(function() {
     console.log("Server running.");
 
     let socket = io();
-    let audio = new Audio("/public/notify.ogg", document.body);
+    let audio = new Audio("/public/notify.mp3", document.body);
     let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
     let defaultTitle = document.title;
     let unreadMessages = 0;
