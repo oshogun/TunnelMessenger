@@ -1,5 +1,6 @@
 /// <reference path="../defs/jQuery.d.ts" />
 
+import {Audio} from "./Audio"
 import {Chat} from "../shared/Chat"
 import {TextMessage} from "../shared/Message"
 import {User} from "../shared/Profile"
@@ -10,6 +11,7 @@ $(document).ready(function() {
     console.log("Server running.");
 
     let socket = io();
+    let audio = new Audio("/public/notify.ogg", document.body);
     let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
     let defaultTitle = document.title;
     let unreadMessages = 0;
@@ -67,6 +69,7 @@ $(document).ready(function() {
         if (!document.hasFocus()) {
             unreadMessages++;
             document.title = "(" + unreadMessages + ") " + defaultTitle;
+            audio.play();
         }
 
         processMessage(name, content);
