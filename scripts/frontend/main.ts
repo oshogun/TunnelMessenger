@@ -14,9 +14,6 @@ $(document).ready(function() {
     let defaultTitle = document.title;
     let unreadMessages = 0;
 
-    $("#chat").css("height", $("body").height());
-    $("#chatBox").css("max-height", $("#display").height());
-
     $("#sendMessage").click(function(){
         socket.emit("chatMessage", $("#messageBox").val());
         $("#messageBox").val("");
