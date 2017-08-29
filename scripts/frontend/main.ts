@@ -22,7 +22,7 @@ $(document).ready(function() {
         return false;
     });
 
-    $("#nicknameButton").click(function(){
+    $("#sendNickname").click(function(){
         socket.emit("changeNick", $("#nicknameBox").val());
         $("#nicknameBox").val("");
         return false;
