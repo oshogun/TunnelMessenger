@@ -10,7 +10,7 @@ let path = require('path');
 let bodyParser = require("body-parser");
 let allowedFolders = ["public","css", "js", "lib"];
 let port = 3000;
-
+let markdown = require("markdown").markdown;
 let users = {};
 let nicks = [];
 let connectedUsers = 0;
@@ -65,11 +65,12 @@ io.on("connection", function(socket) {
 
     function sanitizeInput(content) {
         if(!zoeira) {
-            return content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            return markdown.toHTML(content).replace(/^(?:<p>)?(.*?)(?:<\/p>)?$/, "$1");    
         } else {
             return content;
         }
     }
+
 
     function sendToSender(type, ...otherArgs: any[]) {
         socket.emit.apply(socket, [type, users[socket.id]].concat(otherArgs));
