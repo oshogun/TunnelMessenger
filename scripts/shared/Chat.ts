@@ -29,6 +29,12 @@ export class Chat {
         // throw "This message does not belong to this conversation";
     }
 
+    clear(): void {
+        this.node.innerHTML = "";
+        this.messages = [];
+        this.lastMessageBlock = null;
+    }
+
     private spawnMessageBlock(): void {
         let lastMessage = this.messages[this.messages.length - 1];
 

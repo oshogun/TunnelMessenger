@@ -84,6 +84,10 @@ io.on("connection", function(socket) {
         io.emit.apply(io, [type, users[socket.id]].concat(otherArgs));
     }
 
+    function serverToSender(message) {
+        socket.emit("chatMessage", users[0], message);
+    }
+
     function serverBroadcast(message) {
         io.emit("chatMessage", users[0], message);
     }
@@ -116,6 +120,15 @@ io.on("connection", function(socket) {
     }
 
     let commands = {
+        "/clear": {
+            "broadcast": false,
+            "description": "Clears the message box",
+            "result": function() {
+                sendToSender("clearChatbox");
+                return "TEXT: The chatbox has been cleared.";
+            },
+            "secret": true
+        },
         "/help": {
             "broadcast": false,
             "description": "Lists all available commands",
@@ -218,18 +231,21 @@ io.on("connection", function(socket) {
                 if (commandType(output) == "MENU") {
                     socket.emit("menu", commandContent(output));
                 } else {
-                    serverBroadcast(output);
+                    if (command.secret) {
+                        serverToSender(output);
+                    } else {
+                        serverBroadcast(output);
+                    }
                 }
             }
         }
     });
 
     socket.on("chatImage", function(imageTag: string) {
-        let isRemote = (imageTag.indexOf("<img") === 0);
+        let srcMatches = imageTag.match(/src="([^"]+)"/);
         let url: string;
-        if (isRemote) {
-            let matches = imageTag.match(/src="([^"]+)"/);
-            url = matches[1];
+        if (srcMatches) {
+            url = srcMatches[1];
         } else {
             let base64 = imageTag.substr(imageTag.indexOf(",") + 1);
             let id = Math.round(Math.random() * 1e10).toString();

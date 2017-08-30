@@ -56,13 +56,18 @@ $(document).ready(function() {
                 let data: string;
                 if (typeList.indexOf("text/html") != -1) {
                     data = e.clipboardData.getData("text/html");
+                    socket.emit("chatImage", data);
                 } else {
-                    let blob = items[i].getAsFile();
-                    let reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = function() {
-                        socket.emit("chatImage", reader.result);
-                    };
+                    try {
+                        let blob = items[i].getAsFile();
+                        let reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = function() {
+                            socket.emit("chatImage", reader.result);
+                        };
+                    } catch (e) {
+                        console.log("[ERROR] Failed to process image file");
+                    }
                 }
             }
         }
@@ -120,6 +125,10 @@ $(document).ready(function() {
         nickList += "</ol>";
 
         $("#list").html(nickList);
+    });
+
+    socket.on("clearChatbox", function() {
+        chat.clear();
     });
 });
 
