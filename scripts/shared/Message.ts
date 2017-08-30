@@ -1,3 +1,4 @@
+import {Settings} from "./Settings"
 import {User} from "./Profile"
 
 export interface Message {
@@ -39,6 +40,8 @@ export class ImageMessage implements Message {
 
 	display(node: HTMLElement): void {
 		let container = document.createElement("img");
+		container.style.maxHeight = Settings.IMAGE_MAX_HEIGHT;
+		container.style.maxWidth = Settings.IMAGE_MAX_WIDTH;
 		container.src = this.url;
 		node.appendChild(container);
 	}
