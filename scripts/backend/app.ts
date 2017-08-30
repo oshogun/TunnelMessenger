@@ -231,16 +231,15 @@ io.on("connection", function(socket) {
             let matches = imageTag.match(/src="([^"]+)"/);
             url = matches[1];
         } else {
-            let path = imageTag.replace("file://", "");
+            let base64 = imageTag.substr(imageTag.indexOf(",") + 1);
             let id = Math.round(Math.random() * 1e10).toString();
             url = "/user_images/" + (+new Date()) + "_" + id;
 
             let fs = require("fs");
             try {
-                let fileContent = fs.readFileSync(path);
-                fs.writeFileSync(root + url, fileContent);
+                fs.writeFileSync(root + url, base64, "base64");
             } catch (e) {
-
+                console.log("[ERROR] Failed to upload image");
             }
         }
 

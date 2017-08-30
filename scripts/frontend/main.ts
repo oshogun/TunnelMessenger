@@ -57,10 +57,13 @@ $(document).ready(function() {
                 if (typeList.indexOf("text/html") != -1) {
                     data = e.clipboardData.getData("text/html");
                 } else {
-                    data = e.clipboardData.getData("text/plain");
+                    let blob = items[i].getAsFile();
+                    let reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = function() {
+                        socket.emit("chatImage", reader.result);
+                    };
                 }
-
-                socket.emit("chatImage", data);
             }
         }
     });

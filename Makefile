@@ -112,6 +112,7 @@ $(DEFNAMES): | $(TS)/defs
 clean:
 	@rm -rf js/*
 	@rm -f $(BACKENDMAIN)
+	@rm -rf $(USER_IMAGES)/*
 
 clean_all: clean
 	@rm -rf $(DEFS)/*
