@@ -223,6 +223,14 @@ io.on("connection", function(socket) {
         }
     });
 
+    socket.on("chatImage", function(imageTag) {
+        let matches = imageTag.match(/src="([^"]+)"/);
+        let url = matches[1];
+        let output = "IMAGE: " + url;
+        sendToSender("sendMessage", output);
+        sendToOthers("chatMessage", output);
+    });
+
     // update user nicknames on change of nick
     socket.on("changeNick", changeNickCallback);
 

@@ -25,11 +25,33 @@ export class TextMessage implements Message {
 		return this.datetime;
 	}
 
-	getContent():string {
-		return this.content;
+	private author: User;
+	private content: string;
+	private datetime: Date;
+}
+
+export class ImageMessage implements Message {
+	constructor(url: string, author: User, datetime: Date) {
+		this.url = url;
+		this.author = author;
+		this.datetime = datetime;
+	}
+
+	display(node: HTMLElement): void {
+		let container = document.createElement("img");
+		container.src = this.url;
+		node.appendChild(container);
+	}
+
+	getAuthor(): User {
+		return this.author;
+	}
+
+	getDatetime(): Date {
+		return this.datetime;
 	}
 
 	private author: User;
-	private content: string;
+	private url: string;
 	private datetime: Date;
 }

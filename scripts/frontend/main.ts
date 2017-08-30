@@ -2,7 +2,7 @@
 
 import {Audio} from "./Audio"
 import {Chat} from "../shared/Chat"
-import {TextMessage} from "../shared/Message"
+import {MessageFactory} from "../shared/MessageFactory"
 import {User} from "../shared/Profile"
 
 declare var io;
@@ -39,6 +39,19 @@ $(document).ready(function() {
         }
     });
 
+    $("#messageBox").get(0).addEventListener("paste", function(e) {
+        let items = e.clipboardData.items;
+        if (!items) {
+            return;
+        }
+
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf("image") !== -1) {
+                socket.emit("chatImage", e.clipboardData.getData("text/html"));
+            }
+        }
+    });
+
     let dummyUsers = {};
 
     $(document).focus(function() {
@@ -51,9 +64,7 @@ $(document).ready(function() {
             dummyUsers[name] = new User(name, name + " da Silva", name + "@chatBox.com");
         }
 
-        // TODO: handle different types of messages
-        content = content.substr(content.indexOf(":") + 2);
-        let message = new TextMessage(content, dummyUsers[name], new Date());
+        let message = MessageFactory.getInstance(content, dummyUsers[name], new Date());
        
         chat.addMessage(message);
         $("#chatBox").scrollTop(1e10);
