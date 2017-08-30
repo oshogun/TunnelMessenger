@@ -45,9 +45,22 @@ $(document).ready(function() {
             return;
         }
 
+        let types = e.clipboardData.types;
+        let typeList: string[] = [];
+        for (let i = 0; i < types.length; i++) {
+            typeList.push(types[i]);
+        }
+
         for (let i = 0; i < items.length; i++) {
             if (items[i].type.indexOf("image") !== -1) {
-                socket.emit("chatImage", e.clipboardData.getData("text/html"));
+                let data: string;
+                if (typeList.indexOf("text/html") != -1) {
+                    data = e.clipboardData.getData("text/html");
+                } else {
+                    data = e.clipboardData.getData("text/plain");
+                }
+
+                socket.emit("chatImage", data);
             }
         }
     });

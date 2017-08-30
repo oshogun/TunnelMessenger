@@ -4,6 +4,7 @@ CSS             :=css
 JS              :=js
 LIB             :=lib
 TS              :=scripts
+USER_IMAGES     :=user_images
 LANGFOLDER      :=languages
 TESTS           :=$(TS)/tests
 DEFS            :=$(TS)/defs
@@ -79,7 +80,7 @@ run:
 tests: all
 	@cp $(JS)/$(JSCOMPRESSED) $(JS)/$(JSTESTS)
 
-dirs: | $(CSS) $(JS) $(LIB) $(TS)
+dirs: | $(CSS) $(JS) $(LIB) $(TS) $(USER_IMAGES)
 
 defs: | $(DEFNAMES)
 
@@ -88,7 +89,7 @@ libs: | $(LIBNAMES)
 raw: COMPRESS :=0
 raw: all
 
-$(CSS) $(JS) $(LIB) $(TS) $(TS)/defs:
+$(CSS) $(JS) $(LIB) $(TS) $(TS)/defs $(USER_IMAGES):
 	@echo "[  mkdir  ] $@"
 	@mkdir -p $@
 

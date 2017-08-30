@@ -8,7 +8,7 @@ let http = require('http').createServer(app);
 let io = require('socket.io')(http);
 let path = require('path');
 let bodyParser = require("body-parser");
-let allowedFolders = ["public","css", "js", "lib"];
+let allowedFolders = ["css", "js", "lib", "public", "user_images"];
 let port = 3000;
 let markdown = require("markdown").markdown;
 let users = {};
@@ -224,9 +224,26 @@ io.on("connection", function(socket) {
         }
     });
 
-    socket.on("chatImage", function(imageTag) {
-        let matches = imageTag.match(/src="([^"]+)"/);
-        let url = matches[1];
+    socket.on("chatImage", function(imageTag: string) {
+        let isRemote = (imageTag.indexOf("<img") === 0);
+        let url: string;
+        if (isRemote) {
+            let matches = imageTag.match(/src="([^"]+)"/);
+            url = matches[1];
+        } else {
+            let path = imageTag.replace("file://", "");
+            let id = Math.round(Math.random() * 1e10).toString();
+            url = "/user_images/" + (+new Date()) + "_" + id;
+
+            let fs = require("fs");
+            try {
+                let fileContent = fs.readFileSync(path);
+                fs.writeFileSync(root + url, fileContent);
+            } catch (e) {
+
+            }
+        }
+
         let output = "IMAGE: " + url;
         sendToSender("sendMessage", output);
         sendToOthers("chatMessage", output);
