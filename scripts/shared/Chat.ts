@@ -9,7 +9,7 @@ export class Chat {
         this.node = node;
     }
 
-    addMessage(message: Message): void {
+    addMessage(message: Message, callback?: () => void): void {
         let previousMessage = this.messages[this.messages.length - 1];
         this.messages.push(message);
 
@@ -17,7 +17,7 @@ export class Chat {
             this.spawnMessageBlock();
         }
 
-        this.mergeWithLastBlock(message);
+        this.mergeWithLastBlock(message, callback);
 
         // for (let user of this.users) {
         //  if (user == message.getAuthor()) {
@@ -59,13 +59,13 @@ export class Chat {
         this.lastMessageBlock = container;
     }
 
-    private mergeWithLastBlock(message: Message): void {
+    private mergeWithLastBlock(message: Message, callback?: () => void): void {
         let contentContainer = <HTMLDivElement> utils.create("div", {
             className: "content"
         });
 
-        message.display(contentContainer);
         this.lastMessageBlock.appendChild(contentContainer);
+        message.display(contentContainer, callback);
     }
 
     private name: string;

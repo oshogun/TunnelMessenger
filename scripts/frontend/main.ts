@@ -87,8 +87,9 @@ $(document).ready(function() {
 
         let message = MessageFactory.getInstance(content, dummyUsers[name], new Date());
        
-        chat.addMessage(message);
-        $("#chatBox").scrollTop(1e10);
+        chat.addMessage(message, function() {
+            $("#chatBox").scrollTop(1e10);
+        });
     }
 
     socket.on("menu", function(id) {
@@ -112,7 +113,7 @@ $(document).ready(function() {
 
     })
     socket.on("stoppedTyping", function() {
-        $("#typingCell").html("");
+        $("#typingCell").html("&nbsp;");
     });
 
     socket.on("changeNick", function(source, nicks) {
@@ -129,6 +130,14 @@ $(document).ready(function() {
 
     socket.on("clearChatbox", function() {
         chat.clear();
+    });
+
+    socket.on("mute", function() {
+        audio.mute();
+    });
+
+    socket.on("unmute", function() {
+        audio.unmute();
     });
 });
 

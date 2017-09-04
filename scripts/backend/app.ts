@@ -153,12 +153,22 @@ io.on("connection", function(socket) {
 
                 output += "</ul>";
                 return output;
-            }
+            },
+            "secret": true
         },
         "/github": {
             "broadcast": true,
             "description": "Displays the URL of this project's github page",
             "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
+        },
+        "/mute": {
+            "broadcast": false,
+            "description": "Mutes the notification sound",
+            "result": function() {
+                sendToSender("mute");
+                return "TEXT: The notification sounds have been muted.";
+            },
+            "secret": true
         },
         "/nick": {
             "broadcast": false,
@@ -174,6 +184,15 @@ io.on("connection", function(socket) {
         "/smash": {
             "result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
             "description":"Lets the user smash"
+        },
+        "/unmute": {
+            "broadcast": false,
+            "description": "Unmutes the notification sound",
+            "result": function() {
+                sendToSender("unmute");
+                return "TEXT: The notification sounds have been unmuted.";
+            },
+            "secret": true
         },
         "/whoami": {
             "broadcast": true,

@@ -10,8 +10,19 @@ export class Audio {
 	}
 
 	play(): void {
-		this.node.play();
+		if (this.hasSound) {
+			this.node.play();
+		}
+	}
+
+	mute(): void {
+		this.hasSound = false;
+	}
+
+	unmute(): void {
+		this.hasSound = true;
 	}
 
 	private node: HTMLAudioElement = null;
+	private hasSound: boolean = true;
 }

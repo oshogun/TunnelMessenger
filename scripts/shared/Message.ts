@@ -2,7 +2,7 @@ import {Settings} from "./Settings"
 import {User} from "./Profile"
 
 export interface Message {
-	display(node: HTMLElement): void;
+	display(node: HTMLElement, callback?: () => void): void;
 	getAuthor(): User;
 	getDatetime(): Date;
 }
@@ -14,8 +14,11 @@ export class TextMessage implements Message {
 		this.datetime = datetime;
 	}
 
-	display(node: HTMLElement): void {
+	display(node: HTMLElement, callback?: () => void): void {
 		node.innerHTML = this.content;
+		if (callback) {
+			callback();
+		}
 	}
 
 	getAuthor(): User {
@@ -38,11 +41,14 @@ export class ImageMessage implements Message {
 		this.datetime = datetime;
 	}
 
-	display(node: HTMLElement): void {
+	display(node: HTMLElement, callback?: () => void): void {
 		let container = document.createElement("img");
 		container.style.maxHeight = Settings.IMAGE_MAX_HEIGHT;
 		container.style.maxWidth = Settings.IMAGE_MAX_WIDTH;
 		container.src = this.url;
+		if (callback) {
+			container.addEventListener("load", callback, false);
+		}
 		node.appendChild(container);
 	}
 
