@@ -75,10 +75,13 @@ $(document).ready(function() {
 
     let dummyUsers = {};
 
-    $(document).focus(function() {
+    function onPageFocus() {
         unreadMessages = 0;
         document.title = defaultTitle;
-    });
+    }
+
+    $(document).focus(onPageFocus);
+    window.addEventListener("focus", onPageFocus);
 
     function processMessage(name: string, content: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
