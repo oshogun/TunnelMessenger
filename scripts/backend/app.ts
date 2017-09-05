@@ -8,6 +8,7 @@ let http = require('http').createServer(app);
 let io = require('socket.io')(http);
 let path = require('path');
 let bodyParser = require("body-parser");
+let urlencodedparser = bodyParser.urlencoded({extended: false});
 let allowedFolders = ["css", "js", "lib", "public", "user_images"];
 let port = process.env.PORT || 3000;
 let markdown = require("markdown").markdown;
@@ -22,9 +23,9 @@ if (process.argv.length > 2 && process.argv[2] == "1") {
     console.log("zoeira mode ENGAGED");
 }
 
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+// app.use(bodyParser.urlencoded({
+//     extended: true
+// }));
 
 app.use(bodyParser.json());
 
@@ -33,6 +34,28 @@ app.get("/TunnelMessenger", function(request, response) {
     response.sendFile(root + "/public/index.html");
 });
 
+app.post("/register", urlencodedparser, function(request, response) {
+    console.log("kk eae men, sente só esse formulario de registro:");
+    console.log(request.body);
+    let username = request.body.username;
+    let password = request.body.password;
+    let password_verify = request.body.confirm_password;
+    let email = request.body.email;
+    let emailRegex = new RegExp(
+            /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+        );
+    if(!emailRegex.test(email)) {
+        console.log("Ih rapaz, meio trap esse email aí");
+    } else {
+        console.log("Bom email parça");
+    }
+    if (password != password_verify) {
+        console.log("passwords don't match");
+    } else {
+        console.log("passwords match");
+    }
+    response.sendFile(root + "/public/index.html");
+});
 app.post("/login", function(request, response) {
     response.sendFile(root + "/public/index.html");
 });

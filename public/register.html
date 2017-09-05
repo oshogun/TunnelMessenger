@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Log-in</title>
+	<title>Register new Account</title>
 </head>
 <body>
-<form action="/login" method="POST">
-username:<br>
-<input type="text" name="user[name]"><br>
-password:<br>
-<input type="password" name="user[password]"><br>
-<input type="submit" value="login">
+<form action="/register" method="POST">
+Username:<br>
+	<input type="text" name="username"><br>
+Password:<br>
+	<input type="password" name="password"><br>
+Verify password:<br>
+	<input type="password" name="confirm_password"><br>
+	
+E-mail:<br>
+	<input type="email" name=email>
+	<input type="submit" value="register">
 </form>
 </body>
 </html>
