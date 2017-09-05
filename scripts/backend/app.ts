@@ -9,7 +9,7 @@ let io = require('socket.io')(http);
 let path = require('path');
 let bodyParser = require("body-parser");
 let allowedFolders = ["css", "js", "lib", "public", "user_images"];
-let port = 3000;
+let port = process.env.PORT || 3000;
 let markdown = require("markdown").markdown;
 let users = {};
 let nicks = [];
@@ -28,6 +28,7 @@ app.use(bodyParser.urlencoded({
 
 app.use(bodyParser.json());
 
+
 app.get("/TunnelMessenger", function(request, response) {
     response.sendFile(root + "/public/index.html");
 });
@@ -36,7 +37,7 @@ app.post("/login", function(request, response) {
     response.sendFile(root + "/public/index.html");
 });
 
-app.get("/register", function(request,response){
+app.get("/", function(request,response){
     response.sendFile(root + "/public/register.html");
 });
 
@@ -213,6 +214,25 @@ io.on("connection", function(socket) {
             "result": function() {
                 zoeira = true;
                 return "TEXT: zoeira mode ENGAGED";
+            }
+        },
+        "/roll": {
+            "broadcast": true,
+            "description": "rolls n dice of m sides",
+            "parameters": 2,
+            "result": function(n_dice, m_sides) {
+                if (m_sides > 10000 || n_dice > 100) {
+                    return "TEXT: Can you not";
+                }
+
+                let min = Math.ceil(1);                
+                let max = Math.floor(m_sides);
+              
+                let result = 0;
+                for(let i = 0; i < n_dice; i++) {
+                    result+= Math.floor(Math.random() * (max - min)) + min;
+                }
+                return "TEXT: Roll " + n_dice + "d" + m_sides+": " + result;
             }
         },
     };
