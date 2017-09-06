@@ -1,10 +1,30 @@
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 
+interface Command {
+    // Should other people see this command?
+    broadcast: boolean;
+
+    // Message shown by /help
+    description: string;
+
+    // If this command takes arguments, how many does it take?
+    parameters?: number;
+
+    // Code executed by the command. If a string is returned,
+    // it is either echoed by the SERVER (if it's a "TEXT: "
+    // message) or transmitted to the users (depending on
+    // the "secret" attribute)
+    result: string|((...args: any[]) => string)|Function;
+
+    // Should the output of this command be shown only to the user who typed it?
+    secret?: boolean;
+}
+
 export let generateCommands = function(networkManager: NetworkManager,
     workspace: {[functionName: string]: Function}) {
 
-    let commands = {
+    let commands: {[name: string]: Command} = {
         "/clear": {
             "broadcast": false,
             "description": "Clears the message box",
@@ -67,6 +87,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             "result": "MENU: settings"
         },
         "/smash": {
+            "broadcast": false,
             "result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
             "description":"Lets the user smash"
         },
@@ -87,6 +108,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             }
         },
         "/zoeira_disable": {
+            "broadcast": false,
             "description": "Disables the zoeira mode",
             "result": function() {
                 workspace.zoeiraDisable();
@@ -94,6 +116,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             }
         },
         "/zoeira_enable": {
+            "broadcast": false,
             "description": "Enables the zoeira mode",
             "result": function() {
                 workspace.zoeiraEnable();
