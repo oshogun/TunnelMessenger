@@ -7,8 +7,34 @@ export class User {
         this.email = email;
         this.password = password;
         this.subnick = "";
-        this.mysql = require("mysql");
-        this.fs = require("fs");
+        
+    }
+
+    static verifyUser(username: string, password: string, callback): void {
+        let mysql = require("mysql");
+        let fs = require("fs");
+        fs.readFile('credentials.json', 'utf8', function(err,data){
+            if(err) {
+                throw err;    
+            }
+            let connection = mysql.createConnection(JSON.parse(data));
+            let query = "SELECT * FROM `users` WHERE `username` = ? AND `password` = ?";
+            let found:boolean;
+             connection.query( query,
+                               [username, 
+                               password], 
+                              function(error, results, fields){
+                if(error) {
+                    throw error;
+                }
+                if(results.length != 0) {
+                    found = true;
+                } else {
+                    found = false;
+                }
+                callback(found);
+            });
+        });
     }
 
     getNickname(): string {
@@ -33,11 +59,13 @@ export class User {
 
     findUser(callback):void {
         let self = this;
-        this.fs.readFile('credentials.json', 'utf8', function(err, data) {
+        let mysql = require("mysql");
+        let fs = require("fs");
+        fs.readFile('credentials.json', 'utf8', function(err, data) {
             if(err) {
                 throw err;
             }
-            let connection = self.mysql.createConnection(JSON.parse(data));
+            let connection = mysql.createConnection(JSON.parse(data));
             let query = "SELECT * FROM `users` WHERE `username` = ?";
             let found: boolean;
             connection.query({sql:query, values:[self.nickname]}, function(error, results, fields){
@@ -56,11 +84,13 @@ export class User {
     }
     registerUser(callback):void {
         let self=this;
-        this.fs.readFile('credentials.json', 'utf8', function(err, data) {
+        let mysql = require("mysql");
+        let fs = require("fs");
+        fs.readFile('credentials.json', 'utf8', function(err, data) {
             if (err) {
                 throw err;
             }
-            let connection = self.mysql.createConnection(JSON.parse(data));
+            let connection = mysql.createConnection(JSON.parse(data));
             connection.connect();
             self.findUser(function(found){
                 if (!found) {
@@ -88,6 +118,5 @@ export class User {
     private email: string;
     private subnick: string;
     private password: string;
-    private mysql;
-    private fs;
+    
 }

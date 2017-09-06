@@ -64,7 +64,16 @@ app.post("/register", urlencodedparser, function(request, response) {
 });
 app.post("/login", urlencodedparser, function(request, response) {
     if(request.body.done == "login") {
-        response.sendFile(root + "/public/index.html");
+        User.verifyUser(request.body.username, request.body.password, function(found:boolean) {
+            if(found) {
+                console.log("login success");
+                response.sendFile(root + "/public/index.html");
+            } else {
+                console.log("login FAILED");
+                response.sendFile(root + "/public/login_failed.html");
+            }
+        });
+        
     } else {
         response.sendFile(root + "/public/register.html");
     }
