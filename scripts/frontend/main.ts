@@ -15,6 +15,7 @@ $(document).ready(function() {
     let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
     let defaultTitle = document.title;
     let unreadMessages = 0;
+    
 
     $("#sendMessage").click(function(){
         socket.emit("chatMessage", $("#messageBox").val());
@@ -85,7 +86,7 @@ $(document).ready(function() {
 
     function processMessage(name: string, content: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
-            dummyUsers[name] = new User(name, name + " da Silva", name + "@chatBox.com");
+            dummyUsers[name] = new User(name, name + " da Silva", name + "@chatBox.com", "123456");
         }
 
         let message = MessageFactory.getInstance(content, dummyUsers[name], new Date());
