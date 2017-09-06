@@ -1,5 +1,8 @@
 /// <reference path="../defs/node.d.ts" />
 
+import {NetworkManager} from "./NetworkManager"
+import {generateCommands} from "./Commands"
+
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
 
@@ -12,16 +15,6 @@ let urlencodedparser = bodyParser.urlencoded({extended: false});
 let allowedFolders = ["css", "js", "lib", "public", "user_images"];
 let port = process.env.PORT || 3000;
 let markdown = require("markdown").markdown;
-let users = {};
-let nicks = [];
-let connectedUsers = 0;
-let /*the*/ carnage /*begin*/ = 1200;
-let /*the*/zoeira /*begin*/ = false;
-
-if (process.argv.length > 2 && process.argv[2] == "1") {
-    zoeira = true;
-    console.log("zoeira mode ENGAGED");
-}
 
 // app.use(bodyParser.urlencoded({
 //     extended: true
@@ -76,189 +69,56 @@ for (let i = 0; i < allowedFolders.length; i++) {
 
 // let UserManager = require("./rest").UserManager;
 // let userManager = new UserManager(app);
-users[0] = "SERVER";
 
-io.on("connection", function(socket) {
+
+function sanitizeInput(content: string): string {
+    if (!zoeira) {
+        return markdown.toHTML(content).replace(/^(?:<p>)?(.*?)(?:<\/p>)?$/, "$1");
+    } else {
+        return content;
+    }
+}
+
+function commandType(command) {
+    return command.substr(0, command.indexOf(":"));
+}
+
+function commandContent(command) {
+    return command.substr(command.indexOf(":") + 2);
+}
+
+function changeNickCallback(newName: string) {
+    newName = sanitizeInput(newName);
+    if (newName != null && newName != "") {
+        networkManager.renameUser(newName);
+    }
+}
+
+let /*the*/ carnage /*begin*/ = 1200;
+let /*the*/zoeira /*begin*/ = false;
+
+if (process.argv.length > 2 && process.argv[2] == "1") {
+    zoeira = true;
+    console.log("zoeira mode ENGAGED");
+}
+
+let networkManager = new NetworkManager(io);
+networkManager.addExternalUser(0, "SERVER");
+
+let commands = generateCommands(networkManager, {
+    "changeNickCallback": changeNickCallback,
+    "zoeiraEnable": function() { zoeira = true; },
+    "zoeiraDisable": function() { zoeira = false; }
+});
+
+let connectedUsers = 0;
+
+networkManager.connect(function(socket) {
     connectedUsers++;
 
-    users[socket.id] = "anon" + (nicks.length + 1);
-    nicks.push([socket.id, users[socket.id]]);
-    broadcast("changeNick", nicks);
+    networkManager.login("anon" + (connectedUsers + 1));
 
     console.log("A user has connected. Users online: " + connectedUsers);
-
-    function sanitizeInput(content) {
-        if(!zoeira) {
-            return markdown.toHTML(content).replace(/^(?:<p>)?(.*?)(?:<\/p>)?$/, "$1");    
-        } else {
-            return content;
-        }
-    }
-
-
-    function sendToSender(type, ...otherArgs: any[]) {
-        socket.emit.apply(socket, [type, users[socket.id]].concat(otherArgs));
-    }
-
-    function sendToOthers(type, ...otherArgs: any[]) {
-        socket.broadcast.emit.apply(socket.broadcast, [type, users[socket.id]].concat(otherArgs));
-    }
-
-    function broadcast(type, ...otherArgs: any[]) {
-        io.emit.apply(io, [type, users[socket.id]].concat(otherArgs));
-    }
-
-    function serverToSender(message) {
-        socket.emit("chatMessage", users[0], message);
-    }
-
-    function serverBroadcast(message) {
-        io.emit("chatMessage", users[0], message);
-    }
-
-    function commandType(command) {
-        return command.substr(0, command.indexOf(":"));
-    }
-
-    function commandContent(command) {
-        return command.substr(command.indexOf(":") + 2);
-    }
-
-    function changeNickCallback(nick) {
-        nick = sanitizeInput(nick);
-
-        if (nick != null && nick != "") {
-            // update the list of nicks
-            for (let i = 0; i < nicks.length; i++) {
-                if (nicks[i][0] == socket.id) {
-                    nicks[i][1] = nick;
-                }
-            }
-
-            // update the actual user's nick
-            users[socket.id] = nick;
-
-            // inform other clients
-            broadcast("changeNick", nicks);
-        }
-    }
-
-    let commands = {
-        "/clear": {
-            "broadcast": false,
-            "description": "Clears the message box",
-            "result": function() {
-                sendToSender("clearChatbox");
-                return "TEXT: The chatbox has been cleared.";
-            },
-            "secret": true
-        },
-        "/help": {
-            "broadcast": false,
-            "description": "Lists all available commands",
-            "result": function() {
-                let output = "TEXT: Available commands:<ul>";
-                for (let name in commands) {
-                    if (commands.hasOwnProperty(name)) {
-                        let command = commands[name];
-                        output += "<li>" + name;
-
-                        if (command.parameters) {
-                            output += " (" + command.parameters + " parameter(s))";
-                        }
-
-                        if (command.description) {
-                            output += ": " + command.description;
-                        }
-
-                        output += "</li>";
-                    }
-                }
-
-                output += "</ul>";
-                return output;
-            },
-            "secret": true
-        },
-        "/github": {
-            "broadcast": true,
-            "description": "Displays the URL of this project's github page",
-            "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
-        },
-        "/mute": {
-            "broadcast": false,
-            "description": "Mutes the notification sound",
-            "result": function() {
-                sendToSender("mute");
-                return "TEXT: The notification sounds have been muted.";
-            },
-            "secret": true
-        },
-        "/nick": {
-            "broadcast": false,
-            "description": "Changes the nickname of the user",
-            "parameters": 1,
-            "result": changeNickCallback
-        },
-        "/settings": {
-            "broadcast": false,
-            "description": "Displays a settings menu",
-            "result": "MENU: settings"
-        },
-        "/smash": {
-            "result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
-            "description":"Lets the user smash"
-        },
-        "/unmute": {
-            "broadcast": false,
-            "description": "Unmutes the notification sound",
-            "result": function() {
-                sendToSender("unmute");
-                return "TEXT: The notification sounds have been unmuted.";
-            },
-            "secret": true
-        },
-        "/whoami": {
-            "broadcast": true,
-            "description": "Shows your nickname",
-            "result": function() {
-                return "TEXT: " + users[socket.id]
-            }
-        },
-        "/zoeira_disable": {
-            "description": "Disables the zoeira mode",
-            "result": function() {
-                zoeira = false;
-                return "TEXT: zoeira mode aborted";
-            }
-        },
-        "/zoeira_enable": {
-            "description": "Enables the zoeira mode",
-            "result": function() {
-                zoeira = true;
-                return "TEXT: zoeira mode ENGAGED";
-            }
-        },
-        "/roll": {
-            "broadcast": true,
-            "description": "rolls n dice of m sides",
-            "parameters": 2,
-            "result": function(n_dice, m_sides) {
-                if (m_sides > 10000 || n_dice > 100) {
-                    return "TEXT: Can you not";
-                }
-
-                let min = Math.ceil(1);                
-                let max = Math.floor(m_sides);
-              
-                let result = 0;
-                for(let i = 0; i < n_dice; i++) {
-                    result+= Math.floor(Math.random() * (max - min)) + min;
-                }
-                return "TEXT: Roll " + n_dice + "d" + m_sides+": " + result;
-            }
-        },
-    };
 
     socket.on("chatMessage", function(message) {
         let messagePieces = message.split(" ");
@@ -267,16 +127,16 @@ io.on("connection", function(socket) {
         let broadcast = isValidCommand ? command.broadcast : true;
 
         let outputMessage = "TEXT: " + sanitizeInput(message);
-        sendToSender("sendMessage", outputMessage);
+        networkManager.sendToSender("sendMessage", outputMessage);
 
         if (broadcast) {
-            sendToOthers("chatMessage", outputMessage);
+            networkManager.sendToOthers("chatMessage", outputMessage);
         }
 
         if (isValidCommand) {
             if (command.hasOwnProperty("parameters")) {
                 if (command.parameters != messagePieces.length - 1) {
-                    serverBroadcast("TEXT: expected " + command.parameters + " parameters");
+                    networkManager.serverBroadcast("TEXT: expected " + command.parameters + " parameters");
                     return;
                 }
             }
@@ -294,9 +154,9 @@ io.on("connection", function(socket) {
                     socket.emit("menu", commandContent(output));
                 } else {
                     if (command.secret) {
-                        serverToSender(output);
+                        networkManager.serverToSender(output);
                     } else {
-                        serverBroadcast(output);
+                        networkManager.serverBroadcast(output);
                     }
                 }
             }
@@ -322,36 +182,27 @@ io.on("connection", function(socket) {
         }
 
         let output = "IMAGE: " + url;
-        sendToSender("sendMessage", output);
-        sendToOthers("chatMessage", output);
+        networkManager.sendToSender("sendMessage", output);
+        networkManager.sendToOthers("chatMessage", output);
     });
 
-    // update user nicknames on change of nick
     socket.on("changeNick", changeNickCallback);
 
     socket.on("disconnect", function(){
-        connectedUsers--; // decrement the connected users letiable
-        // remove the user from the nicknames list
-        for (let i = 0; i < nicks.length; i++) {
-            if (nicks[i][0] == socket.id) {
-                nicks.splice(i, 1);
-            }
-        }
+        networkManager.logout();
 
+        connectedUsers--;
         console.log("A user has disconnected. Users online: " + connectedUsers);
-
-        // update the nicks list on all clients
-        broadcast("changeNick", nicks);
     });
 
-    // inform other clients that someone is typing
+    // informs other clients that someone is typing
     socket.on("isTyping", function() {
-        sendToOthers("isTyping");
+        networkManager.sendToOthers("isTyping");
     });
 
-    // inform other clients that someone stopped typing
-    socket.on("stoppedTyping",function() {
-        sendToOthers("stoppedTyping");
+    // informs other clients that someone stopped typing
+    socket.on("stoppedTyping", function() {
+        networkManager.sendToOthers("stoppedTyping");
     });
 });
 
