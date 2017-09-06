@@ -1,3 +1,4 @@
+import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 
 export let generateCommands = function(networkManager: NetworkManager,
@@ -8,7 +9,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             "broadcast": false,
             "description": "Clears the message box",
             "result": function() {
-                networkManager.sendToSender("clearChatbox");
+                networkManager.send(MessageTarget.SENDER, "clearChatbox");
                 return "TEXT: The chatbox has been cleared.";
             },
             "secret": true
@@ -49,7 +50,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             "broadcast": false,
             "description": "Mutes the notification sound",
             "result": function() {
-                networkManager.sendToSender("mute");
+                networkManager.send(MessageTarget.SENDER, "mute");
                 return "TEXT: The notification sounds have been muted.";
             },
             "secret": true
@@ -73,7 +74,7 @@ export let generateCommands = function(networkManager: NetworkManager,
             "broadcast": false,
             "description": "Unmutes the notification sound",
             "result": function() {
-                networkManager.sendToSender("unmute");
+                networkManager.send(MessageTarget.SENDER, "unmute");
                 return "TEXT: The notification sounds have been unmuted.";
             },
             "secret": true

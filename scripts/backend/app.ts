@@ -1,7 +1,9 @@
 /// <reference path="../defs/node.d.ts" />
 
-import {NetworkManager} from "./NetworkManager"
 import {generateCommands} from "./Commands"
+import {MessageTarget} from "./MessageTarget"
+import {NetworkManager} from "./NetworkManager"
+import {UserManager} from "./UserManager"
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -87,13 +89,6 @@ function commandContent(command) {
     return command.substr(command.indexOf(":") + 2);
 }
 
-function changeNickCallback(newName: string) {
-    newName = sanitizeInput(newName);
-    if (newName != null && newName != "") {
-        networkManager.renameUser(newName);
-    }
-}
-
 let /*the*/ carnage /*begin*/ = 1200;
 let /*the*/zoeira /*begin*/ = false;
 
@@ -102,19 +97,28 @@ if (process.argv.length > 2 && process.argv[2] == "1") {
     console.log("zoeira mode ENGAGED");
 }
 
-let networkManager = new NetworkManager(io);
-networkManager.addExternalUser(0, "SERVER");
-
-let commands = generateCommands(networkManager, {
-    "changeNickCallback": changeNickCallback,
-    "zoeiraEnable": function() { zoeira = true; },
-    "zoeiraDisable": function() { zoeira = false; }
-});
+let userManager = new UserManager();
+userManager.addUser(0, "SERVER");
 
 let connectedUsers = 0;
 
-networkManager.connect(function(socket) {
+io.on("connection", function(socket) {
     connectedUsers++;
+
+    let networkManager = new NetworkManager(io, socket, userManager);
+
+    function changeNickCallback(newName: string) {
+        newName = sanitizeInput(newName);
+        if (newName != null && newName != "") {
+            networkManager.renameUser(newName);
+        }
+    }
+
+    let commands = generateCommands(networkManager, {
+        "changeNickCallback": changeNickCallback,
+        "zoeiraEnable": function() { zoeira = true; },
+        "zoeiraDisable": function() { zoeira = false; }
+    });
 
     networkManager.login("anon" + (connectedUsers + 1));
 
@@ -127,10 +131,15 @@ networkManager.connect(function(socket) {
         let broadcast = isValidCommand ? command.broadcast : true;
 
         let outputMessage = "TEXT: " + sanitizeInput(message);
-        networkManager.sendToSender("sendMessage", outputMessage);
+        networkManager.send(MessageTarget.SENDER, "sendMessage", outputMessage);
+
+        if (!isValidCommand && message[0] == "/") {
+            networkManager.serverToSender("TEXT: Error: invalid command '" + messagePieces[0] + "'");
+            return;
+        }
 
         if (broadcast) {
-            networkManager.sendToOthers("chatMessage", outputMessage);
+            networkManager.send(MessageTarget.OTHERS, "chatMessage", outputMessage);
         }
 
         if (isValidCommand) {
@@ -182,8 +191,8 @@ networkManager.connect(function(socket) {
         }
 
         let output = "IMAGE: " + url;
-        networkManager.sendToSender("sendMessage", output);
-        networkManager.sendToOthers("chatMessage", output);
+        networkManager.send(MessageTarget.SENDER, "sendMessage", output);
+        networkManager.send(MessageTarget.OTHERS, "chatMessage", output);
     });
 
     socket.on("changeNick", changeNickCallback);
@@ -197,12 +206,12 @@ networkManager.connect(function(socket) {
 
     // informs other clients that someone is typing
     socket.on("isTyping", function() {
-        networkManager.sendToOthers("isTyping");
+        networkManager.send(MessageTarget.OTHERS, "isTyping");
     });
 
     // informs other clients that someone stopped typing
     socket.on("stoppedTyping", function() {
-        networkManager.sendToOthers("stoppedTyping");
+        networkManager.send(MessageTarget.OTHERS, "stoppedTyping");
     });
 });
 
