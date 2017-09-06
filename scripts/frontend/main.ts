@@ -15,7 +15,13 @@ $(document).ready(function() {
     let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
     let defaultTitle = document.title;
     let unreadMessages = 0;
-    
+
+    let typingTimeout: number|null = null;
+
+    function stopTypingCallback() {
+        socket.emit("stoppedTyping");
+        typingTimeout = null;
+    }
 
     $("#sendMessage").click(function(){
         socket.emit("chatMessage", $("#messageBox").val());
@@ -32,11 +38,17 @@ $(document).ready(function() {
     $("#messageBox").keyup(function(e) {
         if (e.keyCode == 13) {
             $("#sendMessage").click();
+            stopTypingCallback();
         } else {
-            socket.emit("isTyping");
-            setTimeout(function(){
-                socket.emit("stoppedTyping");
-            }, 3000);
+            if (!typingTimeout) {
+                socket.emit("isTyping");
+            }
+
+            if (typingTimeout) {
+                clearTimeout(typingTimeout);
+            }
+
+            typingTimeout = setTimeout(stopTypingCallback, 1500);
         }
     });
 
