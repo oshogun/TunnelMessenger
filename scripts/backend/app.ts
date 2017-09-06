@@ -1,8 +1,9 @@
 /// <reference path="../defs/node.d.ts" />
 
-import {generateCommands} from "./Commands"
+import {Command, CommandLoader} from "./Commands"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
+import {StandardCommands} from "./packages/std/StandardCommands"
 import {UserManager} from "./UserManager"
 import {User} from "../shared/Profile"
 
@@ -127,6 +128,7 @@ let userManager = new UserManager();
 userManager.addUser(0, "SERVER");
 
 let connectedUsers = 0;
+let standardCommands = new StandardCommands();
 
 io.on("connection", function(socket) {
     connectedUsers++;
@@ -140,11 +142,14 @@ io.on("connection", function(socket) {
         }
     }
 
-    let commands = generateCommands(networkManager, {
+    let workspace = {
         "changeNickCallback": changeNickCallback,
         "zoeiraEnable": function() { zoeira = true; },
         "zoeiraDisable": function() { zoeira = false; }
-    });
+    };
+
+    let commandLoader = new CommandLoader();
+    commandLoader.addPackage(standardCommands, networkManager, workspace);
 
     networkManager.login("anon" + (connectedUsers + 1));
 
@@ -152,8 +157,8 @@ io.on("connection", function(socket) {
 
     socket.on("chatMessage", function(message) {
         let messagePieces = message.split(" ");
-        let isValidCommand = commands.hasOwnProperty(messagePieces[0]);
-        let command = commands[messagePieces[0]];
+        let command = <Command> commandLoader.getCommand(message);
+        let isValidCommand = (command !== null);
         let broadcast = isValidCommand ? command.broadcast : true;
 
         let outputMessage = "TEXT: " + sanitizeInput(message);
