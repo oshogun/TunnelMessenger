@@ -6,14 +6,15 @@
 <body>
 <form action="/register" method="POST">
 Username:<br>
-	<input type="text" name="username"><br>
+	<input type="text" name="username" required="true"><br>
 Password:<br>
-	<input type="password" name="password"><br>
+	<input type="password" name="password" required="true"><br>
 Verify password:<br>
-	<input type="password" name="confirm_password"><br>
-	
+	<input type="password" name="confirm_password" required="true"><br>
+Full Name:<br>
+	<input type="text" name="full_name" required="true"><br>	
 E-mail:<br>
-	<input type="email" name=email>
+	<input type="email" name=email required="true">
 	<input type="submit" value="register">
 </form>
 </body>

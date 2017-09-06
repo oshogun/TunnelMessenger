@@ -4,6 +4,7 @@ import {generateCommands} from "./Commands"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
+import {User} from "../shared/Profile"
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -36,6 +37,7 @@ app.post("/register", urlencodedparser, function(request, response) {
     let password = request.body.password;
     let password_verify = request.body.confirm_password;
     let email = request.body.email;
+    let full_name = request.body.full_name;
     let emailRegex = new RegExp(
             /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
         );
@@ -47,9 +49,18 @@ app.post("/register", urlencodedparser, function(request, response) {
     if (password != password_verify) {
         console.log("passwords don't match");
     } else {
-        console.log("passwords match");
+        let newUser = new User(username,full_name,email,password);
+       
+        newUser.registerUser(function(success) {
+            if(!success) {
+                console.log("Username already in use");
+                response.sendFile(root + "/public/register.html");
+            } else {
+                console.log("passwords match");
+                response.sendFile(root + "/public/index.html");
+            }
+        });                       
     }
-    response.sendFile(root + "/public/index.html");
 });
 app.post("/login", function(request, response) {
     response.sendFile(root + "/public/index.html");

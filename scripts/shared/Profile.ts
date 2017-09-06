@@ -1,11 +1,14 @@
 declare function require(name:string);
 
 export class User {
-    constructor(nickname: string, fullName: string, email: string) {
+    constructor(nickname: string, fullName: string, email: string, password:string) {
         this.nickname = nickname;
         this.fullName = fullName;
         this.email = email;
+        this.password = password;
         this.subnick = "";
+        this.mysql = require("mysql");
+        this.fs = require("fs");
     }
 
     getNickname(): string {
@@ -28,30 +31,63 @@ export class User {
         node.innerHTML = this.nickname;
     }
 
-    registerUser():void {
-        let mysql = require("mysql");
-        let connection = mysql.createConnection({
-            host     : 'localhost',
-            user     : 'labsec',
-            password : 'labsec',
-            database : 'TunnelMessenger'
-        });
-
-        connection.connect();
-        let query = "INSERT INTO users(username, nickname, subnick, fullName, email)\
-                     VALUES(" + this.nickname +"," + this.nickname + "," + this.subnick + ",\
-                     "+ this.email +")";
-        connection.query(query, function(error) {
-            if(error) {
-                throw error;
+    findUser(callback):void {
+        let self = this;
+        this.fs.readFile('credentials.json', 'utf8', function(err, data) {
+            if(err) {
+                throw err;
             }
-            console.log(query);
+            let connection = self.mysql.createConnection(JSON.parse(data));
+            let query = "SELECT * FROM `users` WHERE `username` = ?";
+            let found: boolean;
+            connection.query({sql:query, values:[self.nickname]}, function(error, results, fields){
+                if(error) {
+                    throw error;
+                }
+                if(results.length != 0) {
+                    found = true;
+                } else {
+                    found = false;
+                }
+                console.log(results);
+                callback(found);
+            });     
         });
-        connection.end;
     }
+    registerUser(callback):void {
+        let self=this;
+        this.fs.readFile('credentials.json', 'utf8', function(err, data) {
+            if (err) {
+                throw err;
+            }
+            let connection = self.mysql.createConnection(JSON.parse(data));
+            connection.connect();
+            self.findUser(function(found){
+                if (!found) {
+                let query = "INSERT INTO users(username, nickname, fullName, email, password)\
+                             VALUES('" + self.nickname +"','" + self.nickname + "','" + self.fullName + "',\
+                             '"+ self.email +"','" + self.password +"')";
+                connection.query(query, function(error) {
+                    if(error) {
+                        throw error;
+                    }
+                    console.log(query);
+                    callback(true);
+                });
+                connection.end();
+                } else {
+                    callback(false);
+                }
+            });    
+        });       
+    }
+
 
     private nickname: string;
     private fullName: string;
     private email: string;
     private subnick: string;
+    private password: string;
+    private mysql;
+    private fs;
 }
