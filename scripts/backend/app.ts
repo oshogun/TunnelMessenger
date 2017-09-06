@@ -62,12 +62,18 @@ app.post("/register", urlencodedparser, function(request, response) {
         });                       
     }
 });
-app.post("/login", function(request, response) {
-    response.sendFile(root + "/public/index.html");
+app.post("/login", urlencodedparser, function(request, response) {
+    if(request.body.done == "login") {
+        response.sendFile(root + "/public/index.html");
+    } else {
+        response.sendFile(root + "/public/register.html");
+    }
 });
 
+
+
 app.get("/", function(request,response){
-    response.sendFile(root + "/public/register.html");
+    response.sendFile(root + "/public/login.html");
 });
 
 app.get("/frontend/main.js", function(request,response){
