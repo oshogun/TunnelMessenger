@@ -42,7 +42,7 @@ $(BACKENDMAIN): $(BACKENDFILES)
 	@echo "[ backend ]"
 	@echo "[.ts ⟶ .js] translating backend scripts"
 	@if [ "$(BACKENDFILES)" != "" ]; then \
-		tsc --removeComments --noImplicitReturns --outDir $(JS) $(BACKENDFILES); \
+		tsc --strictNullChecks --removeComments --noImplicitReturns --outDir $(JS) $(BACKENDFILES); \
 	fi
 
 	@echo "[  alias  ] $(BACKENDFOLDER)$(BACKENDMAIN) ⟶ $(BACKENDMAIN)"
@@ -57,7 +57,7 @@ $(FRONTENDMAIN): $(FRONTENDFILES)
 
 	@echo "[.ts ⟶ .js] translating frontend scripts"
 	@if [ "$(FRONTENDFILES)" != "" ]; then \
-		tsc --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(FRONTENDFILES); \
+		tsc --strictNullChecks --removeComments --noImplicitReturns --module amd --outFile $(JSBASE) $(FRONTENDFILES); \
 	fi
 
 	@if [ "$(COMPRESS)" = "1" ]; then \

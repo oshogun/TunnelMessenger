@@ -9,20 +9,20 @@ export class Audio {
 		parentNode.appendChild(this.node);
 	}
 
-	play(): void {
+	public play(): void {
 		if (this.hasSound) {
 			this.node.play();
 		}
 	}
 
-	mute(): void {
+	public mute(): void {
 		this.hasSound = false;
 	}
 
-	unmute(): void {
+	public unmute(): void {
 		this.hasSound = true;
 	}
 
-	private node: HTMLAudioElement = null;
+	private node: HTMLAudioElement;
 	private hasSound: boolean = true;
 }

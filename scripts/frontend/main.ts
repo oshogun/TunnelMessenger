@@ -73,6 +73,10 @@ $(document).ready(function() {
                 } else {
                     try {
                         let blob = items[i].getAsFile();
+                        if (!blob) {
+                            throw Error();
+                        }
+
                         let reader = new FileReader();
                         reader.readAsDataURL(blob);
                         reader.onloadend = function() {

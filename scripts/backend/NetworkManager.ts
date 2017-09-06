@@ -27,6 +27,8 @@ export class NetworkManager {
                 method = io.emit;
                 proxy = io;
                 break;
+            default:
+                throw Error("Unknown MessageTarget: '" + target + "'");
         }
 
         let args = [type, this.user()].concat(otherArgs);

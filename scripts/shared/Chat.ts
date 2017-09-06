@@ -9,7 +9,7 @@ export class Chat {
         this.node = node;
     }
 
-    addMessage(message: Message, callback?: () => void): void {
+    public addMessage(message: Message, callback?: () => void): void {
         let previousMessage = this.messages[this.messages.length - 1];
         this.messages.push(message);
 
@@ -29,7 +29,7 @@ export class Chat {
         // throw "This message does not belong to this conversation";
     }
 
-    clear(): void {
+    public clear(): void {
         this.node.innerHTML = "";
         this.messages = [];
         this.lastMessageBlock = null;
@@ -64,13 +64,13 @@ export class Chat {
             className: "content"
         });
 
-        this.lastMessageBlock.appendChild(contentContainer);
+        (<HTMLElement> this.lastMessageBlock).appendChild(contentContainer);
         message.display(contentContainer, callback);
     }
 
     private name: string;
     private users: User[];
     private messages: Message[] = [];
-    private lastMessageBlock: HTMLElement;
+    private lastMessageBlock: HTMLElement|null;
     private node: HTMLElement;
 }

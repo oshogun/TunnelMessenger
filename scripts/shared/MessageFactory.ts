@@ -2,12 +2,12 @@ import {Message, ImageMessage, TextMessage} from "./Message"
 import {User} from "./Profile"
 
 export class MessageFactory {
-    static getInstance(fullMessage, author: User, date: Date) {
+    static getInstance(fullMessage, author: User, date: Date): Message {
         let separator = fullMessage.indexOf(":");
         let type = fullMessage.substr(0, separator);
         let content = fullMessage.substr(separator + 2);
 
-        let message: Message = null;
+        let message: Message;
         switch (type) {
             case "TEXT":
                 message = new TextMessage(content, author, date);
@@ -15,6 +15,8 @@ export class MessageFactory {
             case "IMAGE":
                 message = new ImageMessage(content, author, date);
                 break;
+            default:
+                throw Error("Unknown message type");
         }
 
         return message;
