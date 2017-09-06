@@ -38,21 +38,21 @@ app.post("/register", urlencodedparser, function(request, response) {
     let password_verify = request.body.confirm_password;
     let email = request.body.email;
     let full_name = request.body.full_name;
-    let emailRegex = new RegExp(
-            /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
-        );
-    if(!emailRegex.test(email)) {
+    let emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+    if (!emailRegex.test(email)) {
         console.log("Ih rapaz, meio trap esse email aí");
     } else {
         console.log("Bom email parça");
     }
+
     if (password != password_verify) {
         console.log("passwords don't match");
     } else {
         let newUser = new User(username,full_name,email,password);
        
         newUser.registerUser(function(success) {
-            if(!success) {
+            if (!success) {
                 console.log("Username already in use");
                 response.sendFile(root + "/public/register.html");
             } else {

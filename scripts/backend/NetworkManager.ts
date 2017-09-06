@@ -8,10 +8,6 @@ export class NetworkManager {
         this.userManager = userManager;
     }
 
-    public bindSocket(socket: any): void {
-        this.socket = socket;
-    }
-
     public send(target: MessageTarget, type: string, ...otherArgs: any[]): void {
         let io = this.io;
         let socket = this.socket;
