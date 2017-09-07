@@ -48,7 +48,7 @@ $(document).ready(function() {
                 clearTimeout(typingTimeout);
             }
 
-            typingTimeout = setTimeout(stopTypingCallback, 1500);
+            typingTimeout = <number> <any> setTimeout(stopTypingCallback, 1500);
         }
     });
 

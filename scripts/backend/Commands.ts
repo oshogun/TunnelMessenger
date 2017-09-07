@@ -1,4 +1,5 @@
 import {NetworkManager} from "./NetworkManager"
+import {packageIndex} from "./PackageIndex"
 
 export interface Command {
     // Should other people see this command?
@@ -28,12 +29,30 @@ export interface CommandPackage {
 }
 
 export class CommandLoader {
-    public addPackage(commandPackage: CommandPackage,
+    public addPackage(packageName: string,
         networkManager: NetworkManager, workspace: Workspace): void {
 
-        this.packages.push(commandPackage);
-        this.loadedPackages.push(false);
+        this.packages.push(packageIndex[packageName]);
         this.load(this.packages.length - 1, networkManager, workspace);
+    }
+
+    public removePackage(packageName: string,
+        networkManager: NetworkManager, workspace: Workspace): void {
+
+        let commandPackage = packageIndex[packageName];
+        for (let i = 0; i < this.packages.length; i++) {
+            if (this.packages[i] == commandPackage) {
+                let commandList = commandPackage.generateCommands(networkManager, workspace);
+                for (var name in commandList) {
+                    if (commandList.hasOwnProperty(name)) {
+                        delete this.commands[name];
+                    }
+                }
+
+                this.packages.splice(i, 1);
+                break;
+            }
+        }
     }
 
     public getCommand(message: string): Command|null {
@@ -48,20 +67,17 @@ export class CommandLoader {
     private load(index: number, networkManager: NetworkManager,
         workspace: Workspace) {
 
-        if (!this.loadedPackages[index]) {
-            let commandPackage = this.packages[index];
-            let newCommands = commandPackage.generateCommands(networkManager, workspace);
-            for (let commandName in newCommands) {
-                if (this.commands.hasOwnProperty(commandName)) {
-                    throw Error("Conflicting command '" + commandName + "'");
-                }
-
-                this.commands[commandName] = newCommands[commandName];
+        let commandPackage = this.packages[index];
+        let newCommands = commandPackage.generateCommands(networkManager, workspace);
+        for (let commandName in newCommands) {
+            if (this.commands.hasOwnProperty(commandName)) {
+                throw Error("Conflicting command '" + commandName + "'");
             }
+
+            this.commands[commandName] = newCommands[commandName];
         }
     }
 
     private commands: CommandGroup = {};
     private packages: CommandPackage[] = [];
-    private loadedPackages: boolean[] = [];
 }

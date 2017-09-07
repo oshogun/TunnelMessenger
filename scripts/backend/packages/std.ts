@@ -1,10 +1,19 @@
-import {Command, CommandGroup, CommandPackage, Workspace} from "../../Commands"
-import {MessageTarget} from "../../MessageTarget"
-import {NetworkManager} from "../../NetworkManager"
+import {Command, CommandGroup, CommandPackage, Workspace} from "../Commands"
+import {MessageTarget} from "../MessageTarget"
+import {NetworkManager} from "../NetworkManager"
 
-export class StandardCommands implements CommandPackage {
-    public generateCommands(networkManager: NetworkManager, workspace: Workspace) {
+export let std: CommandPackage = {
+    generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
         let commands: CommandGroup = {
+            "/chess": {
+                "broadcast": true,
+                "description": "Stats a game of chess",
+                "parameters": 1,
+                "result": function(targetUser) {
+                    workspace["addPackage"]("chess");
+                    return "TEXT: The game shall begin!";
+                }
+            },
             "/clear": {
                 "broadcast": false,
                 "description": "Clears the message box",
@@ -59,7 +68,7 @@ export class StandardCommands implements CommandPackage {
                 "broadcast": false,
                 "description": "Changes the nickname of the user",
                 "parameters": 1,
-                "result": workspace.changeNickCallback
+                "result": workspace["changeNickCallback"]
             },
             "/settings": {
                 "broadcast": false,
@@ -91,7 +100,7 @@ export class StandardCommands implements CommandPackage {
                 "broadcast": false,
                 "description": "Disables the zoeira mode",
                 "result": function() {
-                    workspace.zoeiraDisable();
+                    workspace["zoeiraDisable"]();
                     return "TEXT: zoeira mode aborted";
                 }
             },
@@ -99,7 +108,7 @@ export class StandardCommands implements CommandPackage {
                 "broadcast": false,
                 "description": "Enables the zoeira mode",
                 "result": function() {
-                    workspace.zoeiraEnable();
+                    workspace["zoeiraEnable"]();
                     return "TEXT: zoeira mode ENGAGED";
                 }
             },

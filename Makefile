@@ -8,11 +8,22 @@ USER_IMAGES     :=user_images
 LANGFOLDER      :=languages
 TESTS           :=$(TS)/tests
 DEFS            :=$(TS)/defs
+BACKENDFOLDER   :=backend
+FRONTENDFOLDER  :=frontend
+SHAREDFOLDER    :=shared
+BACKENDJS       :=$(JS)/$(BACKENDFOLDER)
+FRONTENDJS      :=$(JS)/$(FRONTENDFOLDER)
+SHAREDJS        :=$(JS)/$(SHAREDFOLDER)
+BACKENDTS       :=$(TS)/$(BACKENDFOLDER)
+FRONTENDTS      :=$(TS)/$(FRONTENDFOLDER)
+SHAREDTS        :=$(TS)/$(SHAREDFOLDER)
+PACKAGES        :=$(BACKENDTS)/packages
 
 # Special files
 INDEX           :=index.html
 DEFSFILE        :=defs.txt
 LIBSFILE        :=libs.txt
+PACKAGELIST     :=$(BACKENDTS)/PackageIndex.ts
 PRIORITYFILE    :=priority.txt
 BACKENDFOLDER   :=$(JS)/backend/
 BACKENDMAIN     :=app.js
@@ -22,9 +33,10 @@ JSTESTS         :=tests.js
 
 COMPRESS        :=0
 
-SHAREDFILES     :=$(wildcard $(TS)/shared/*.ts)
-BACKENDFILES    :=$(wildcard $(TS)/backend/*.ts)
-FRONTENDFILES   :=$(wildcard $(TS)/frontend/*.ts)
+SHAREDFILES     :=$(shell find $(SHAREDTS) -mindepth 1 -name "*.ts")
+BACKENDFILES    :=$(shell find $(BACKENDTS) -mindepth 1 -name "*.ts")
+FRONTENDFILES   :=$(shell find $(FRONTENDTS) -mindepth 1 -name "*.ts")
+PACKAGEFILES    :=$(basename $(notdir $(wildcard $(PACKAGES)/*.ts)))
 TSTESTFILES     :=$(wildcard $(TESTS)/*.ts)
 ORIGDEFNAMES    :=$(shell cat $(DEFSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
 ORIGLIBNAMES    :=$(shell cat $(LIBSFILE) | sed "s/^\([^:]\+\): \(.*\)/\1/")
@@ -38,7 +50,7 @@ FRONTENDFILES += $(SHAREDFILES)
 
 all: dirs defs libs languages $(BACKENDMAIN) $(FRONTENDMAIN)
 
-$(BACKENDMAIN): $(BACKENDFILES)
+$(BACKENDMAIN): $(BACKENDFILES) $(PACKAGELIST)
 	@echo "[ backend ]"
 	@echo "[.ts ⟶ .js] translating backend scripts"
 	@if [ "$(BACKENDFILES)" != "" ]; then \
@@ -108,6 +120,21 @@ $(DEFNAMES): | $(TS)/defs
 	@echo "[   def   ] $(PURENAME)"
 	@touch $@
 	@wget -O $@ -q $(URL)
+
+$(PACKAGELIST): $(PACKAGES)
+	@echo "[aux files] Building auxiliary files"
+	@truncate -s 0 $(PACKAGELIST)
+
+	@touch temp
+
+	@printf "export let packageIndex = {\n" >> temp
+	@for name in $(PACKAGEFILES); do \
+		printf "import {$$name} from \"./packages/$$name\"\n" >> $(PACKAGELIST); \
+		printf "\t\"$$name\": $$name,\n" >> temp; \
+	done
+	@printf "}\n" >> temp
+	@cat temp >> $(PACKAGELIST)
+	@rm temp
 
 clean:
 	@rm -rf js/*

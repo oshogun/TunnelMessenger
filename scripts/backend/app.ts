@@ -1,9 +1,8 @@
 /// <reference path="../defs/node.d.ts" />
 
-import {Command, CommandLoader} from "./Commands"
+import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
-import {StandardCommands} from "./packages/std/StandardCommands"
 import {UserManager} from "./UserManager"
 import {User} from "../shared/Profile"
 
@@ -99,6 +98,17 @@ for (let i = 0; i < allowedFolders.length; i++) {
 // let UserManager = require("./rest").UserManager;
 // let userManager = new UserManager(app);
 
+type Map<T> = {[keys: string]: T};
+
+function extend<T>(obj: Map<T>, props: Map<T>): Map<T> {
+    for (var i in props) {
+        if (props.hasOwnProperty(i)) {
+            obj[i] = props[i];
+        }
+    }
+
+    return obj;
+}
 
 function sanitizeInput(content: string): string {
     if (!zoeira) {
@@ -128,12 +138,29 @@ let userManager = new UserManager();
 userManager.addUser(0, "SERVER");
 
 let connectedUsers = 0;
-let standardCommands = new StandardCommands();
 
 io.on("connection", function(socket) {
     connectedUsers++;
 
     let networkManager = new NetworkManager(io, socket, userManager);
+
+    let workspace: Workspace = {
+        "changeNickCallback": changeNickCallback,
+        "zoeiraEnable": function() { zoeira = true; },
+        "zoeiraDisable": function() { zoeira = false; }
+    };
+
+    let commandLoader = new CommandLoader();
+    commandLoader.addPackage("std", networkManager, workspace);
+
+    extend(workspace, {
+        "addPackage": function(packageName: string) {
+            commandLoader.addPackage(packageName, networkManager, workspace);
+        },
+        "removePackage": function(packageName: string) {
+            commandLoader.removePackage(packageName, networkManager, workspace);
+        }
+    });
 
     function changeNickCallback(newName: string) {
         newName = sanitizeInput(newName);
@@ -141,15 +168,6 @@ io.on("connection", function(socket) {
             networkManager.renameUser(newName);
         }
     }
-
-    let workspace = {
-        "changeNickCallback": changeNickCallback,
-        "zoeiraEnable": function() { zoeira = true; },
-        "zoeiraDisable": function() { zoeira = false; }
-    };
-
-    let commandLoader = new CommandLoader();
-    commandLoader.addPackage(standardCommands, networkManager, workspace);
 
     networkManager.login("anon" + (connectedUsers + 1));
 
