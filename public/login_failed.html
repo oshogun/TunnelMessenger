@@ -1,19 +1,23 @@
+
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Register new Account</title>
+	<title>Tunnel Messenger: Login</title>
+	<link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
-<span style="color:red"> INCORRECT USERNAME OR PASSWORD </span>
-<form action="/login" method="POST">
-Username:<br>
-	<input type="text" name="username"><br>
-Password:<br>
-	<input type="password" name="password"><br>
-	<input type="submit" name="done" value="login">
 
-<h3> Not a official licensed TunnelMessenger user? </h3>
-	<input type="submit" name="done" value="register">
-</form>
+<div class="loginbox">
+	<span style="color:red; text-align:center;"> INCORRECT USERNAME OR PASSWORD </span>
+	<form action="/login" method="POST">
+	Username:<br>
+		<input type="text" name="username"><br>
+	Password:<br>
+		<input type="password" name="password"><br>
+		<input type="submit" name="done" value="login"><br>
+	Not an official licensed TunnelMessenger user? <br>
+		<input type="submit" name="done" value="register">
+	</form>
+</div>
 </body>
 </html>
