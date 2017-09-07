@@ -6,7 +6,7 @@ export let chess: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
         let commands: CommandGroup = {
             "/chega-de-chess": {
-                "broadcast": false,
+                "broadcast": true,
                 "description": "Flies away from a chess match",
                 "result": function() {
                     workspace["removePackage"]("chess");
@@ -14,7 +14,7 @@ export let chess: CommandPackage = {
                 }
             },
             "/move": {
-                "broadcast": false,
+                "broadcast": true,
                 "description": "Makes a move",
                 "result": function() {
                     return "TEXT: Your move has been executed.";
