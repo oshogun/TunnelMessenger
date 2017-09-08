@@ -159,6 +159,9 @@ io.on("connection", function(socket) {
         },
         "removePackage": function(packageName: string) {
             commandLoader.removePackage(packageName, networkManager, workspace);
+        },
+        "isPackageLoaded": function(packageName: string): boolean {
+            return commandLoader.isPackageLoaded(packageName);
         }
     });
 

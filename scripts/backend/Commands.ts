@@ -1,5 +1,6 @@
 import {NetworkManager} from "./NetworkManager"
 import {packageIndex} from "./PackageIndex"
+import {UnorderedSet} from "../shared/UnorderedSet"
 
 export interface Command {
     // Should other people see this command?
@@ -32,8 +33,15 @@ export class CommandLoader {
     public addPackage(packageName: string,
         networkManager: NetworkManager, workspace: Workspace): void {
 
-        this.packages.push(packageIndex[packageName]);
-        this.load(this.packages.length - 1, networkManager, workspace);
+        if (!this.loadedPackages.contains(packageName)) {
+            if (this.packageExists(packageName)) {
+                this.packages.push(packageIndex[packageName]);
+                this.load(this.packages.length - 1, networkManager, workspace);
+                this.loadedPackages.insert(packageName);
+            } else {
+                console.log("[WARNING] Tried to load a non-existing package '" + packageName + "'");
+            }
+        }
     }
 
     public removePackage(packageName: string,
@@ -50,9 +58,14 @@ export class CommandLoader {
                 }
 
                 this.packages.splice(i, 1);
+                this.loadedPackages.erase(packageName);
                 break;
             }
         }
+    }
+
+    public isPackageLoaded(packageName: string): boolean {
+        return this.loadedPackages.contains(packageName);
     }
 
     public getCommand(message: string): Command|null {
@@ -78,6 +91,11 @@ export class CommandLoader {
         }
     }
 
+    private packageExists(packageName: string): boolean {
+        return packageIndex.hasOwnProperty(packageName);
+    }
+
     private commands: CommandGroup = {};
     private packages: CommandPackage[] = [];
+    private loadedPackages = new UnorderedSet<string>();
 }

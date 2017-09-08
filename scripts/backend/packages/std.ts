@@ -10,6 +10,10 @@ export let std: CommandPackage = {
                 "description": "Stats a game of chess",
                 "parameters": 1,
                 "result": function(targetUser) {
+                    if (workspace["isPackageLoaded"]("chess")) {
+                        return "TEXT: There's already a game in progress.";
+                    }
+
                     workspace["addPackage"]("chess");
                     return "TEXT: The game shall begin!";
                 }
