@@ -1,5 +1,5 @@
 import {Message} from "./Message"
-import {User} from "./Profile"
+import {User} from "./User"
 import {utils} from "./Utils"
 
 export class Chat {

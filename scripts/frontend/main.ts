@@ -3,7 +3,7 @@
 import {Audio} from "./Audio"
 import {Chat} from "../shared/Chat"
 import {MessageFactory} from "../shared/MessageFactory"
-import {User} from "../shared/Profile"
+import {User} from "../shared/User"
 
 declare var io;
 

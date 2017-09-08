@@ -1,5 +1,5 @@
 import {Message, ImageMessage, TextMessage} from "./Message"
-import {User} from "./Profile"
+import {User} from "./User"
 
 export class MessageFactory {
     static getInstance(fullMessage, author: User, date: Date): Message {

@@ -4,7 +4,8 @@ import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
-import {User} from "../shared/Profile"
+import {UserPersistence} from "./UserPersistence"
+import {User} from "../shared/User"
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -50,30 +51,36 @@ app.post("/register", urlencodedparser, function(request, response) {
         console.log("passwords don't match");
     } else {
         let newUser = new User(username,full_name,email,password);
-       
-        newUser.registerUser(function(success) {
-            if (!success) {
-                console.log("Username already in use");
-                response.sendFile(root + "/public/register.html");
-            } else {
+
+        UserPersistence.register(newUser).then(function(success) {
+            if (success) {
                 console.log("passwords match");
                 response.sendFile(root + "/public/index.html");
+            } else {
+                console.log("Username already in use");
+                response.sendFile(root + "/public/register.html");
             }
-        });                       
+        }, function(error) {
+            throw error;
+        });
     }
 });
 app.post("/login", urlencodedparser, function(request, response) {
-    if(request.body.done == "login") {
-        User.verifyUser(request.body.username, request.body.password, function(found:boolean) {
-            if(found) {
+    if (request.body.done == "login") {
+        let username = request.body.username;
+        let password = request.body.password;
+        UserPersistence.verify(username, password).then(function(found) {
+            if (found) {
                 console.log("login success");
                 response.sendFile(root + "/public/index.html");
             } else {
                 console.log("login FAILED");
                 response.sendFile(root + "/public/login_failed.html");
             }
+        }, function(error) {
+            throw error;
         });
-        
+
     } else {
         response.sendFile(root + "/public/register.html");
     }
