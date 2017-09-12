@@ -189,10 +189,8 @@ io.on("connection", function(socket) {
      function findMtgCardImage(argument) {
         let image_uri: string;
         mtgHandler.getCard(argument, function(res) {
-             let imageTag ="TEXT: <img src=" + res.image_uri; + ">";
-             console.log("kk eae men sente essa carta", res.image_uri);
-             socket.broadcast.emit("chatMessage", imageTag);
-             
+             let imageTag = "IMAGE: " + res.image_uri;
+             networkManager.serverBroadcast(imageTag);            
         });
         
     }
