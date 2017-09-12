@@ -93,7 +93,7 @@ export let std: CommandPackage = {
             },
             "/smash": {
                 "broadcast": false,
-                "result": "TEXT: <img src=\"https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg\">",
+                "result": "IMAGE: https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg",
                 "description":"Lets the user smash"
             },
             "/unmute": {
