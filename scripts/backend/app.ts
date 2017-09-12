@@ -216,7 +216,7 @@ io.on("connection", function(socket) {
   
     socket.on("chatMessage", function(message) {
         let messagePieces = message.split(" ");
-        let command = <Command> commandLoader.getCommand(message);
+        let command = commandLoader.getCommand(message)!;
         let isValidCommand = (command !== null);
         let broadcast = isValidCommand ? command.broadcast : true;
 
@@ -233,8 +233,9 @@ io.on("connection", function(socket) {
         }
 
         if (isValidCommand) {
+            let parameters = commandLoader.parseParameters(message);
             if (command.hasOwnProperty("parameters")) {
-                if (command.parameters != messagePieces.length - 1) {
+                if (command.parameters != parameters.length) {
                     networkManager.serverBroadcast("TEXT: expected " + command.parameters + " parameters");
                     return;
                 }
@@ -243,7 +244,7 @@ io.on("connection", function(socket) {
             let result = command.result;
             let output;
             if (result instanceof Function) {
-                output = result.apply(null, messagePieces.slice(1));
+                output = result.apply(null, parameters);
             } else {
                 output = result;
             }

@@ -77,6 +77,51 @@ export class CommandLoader {
         return this.commands[messagePieces[0]];
     }
 
+    public parseParameters(message: string): string[] {
+        let firstSpace = message.indexOf(" ");
+        let paramString = message.substr(firstSpace + 1).trim();
+
+        let parameters: string[] = [];
+        let buffer = "";
+        let quotedString = false;
+        let i = 0;
+        while (i < paramString.length) {
+            let char = paramString[i];
+
+            if (char == '"' && buffer.length == 0) {
+                quotedString = true;
+                i++;
+                continue;
+            }
+
+            let isLastChar = (i == paramString.length - 1);
+            if (char == '"' && (isLastChar || message[i + 1] == " ")) {
+                // closes the string, allow the parameter to end
+                quotedString = false;
+                i++;
+                continue;
+            }
+
+            if (char == " " && !quotedString) {
+                // marks the end of the parameter
+                parameters.push(buffer);
+                buffer = "";
+                i++;
+                continue;
+            }
+
+            buffer += char;
+            i++;
+        }
+
+        // pushes the last parameter if it exists
+        if (buffer.length > 0) {
+            parameters.push(buffer);
+        }
+
+        return parameters;
+    }
+
     private load(index: number, networkManager: NetworkManager,
         workspace: Workspace) {
 
