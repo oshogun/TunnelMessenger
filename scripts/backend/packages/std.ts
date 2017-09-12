@@ -74,6 +74,12 @@ export let std: CommandPackage = {
                 "parameters": 1,
                 "result": workspace["findMtgCardImage"]
             },
+            "/mtgLegalities": {
+                "broadcast": true,
+                "description": "Displayes the legalities of a given MTG card",
+                "parameters": 1,
+                "result": workspace["findMtgLegalInfo"]
+            },
             "/nick": {
                 "broadcast": false,
                 "description": "Changes the nickname of the user",

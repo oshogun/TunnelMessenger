@@ -161,7 +161,7 @@ io.on("connection", function(socket) {
         "zoeiraEnable": function() { zoeira = true; },
         "zoeiraDisable": function() { zoeira = false; },
         "findMtgCardImage": findMtgCardImage,
-        "socket": socket,
+        "findMtgLegalInfo": findMtgLegalInfo
     };
 
     let commandLoader = new CommandLoader();
@@ -189,12 +189,27 @@ io.on("connection", function(socket) {
      function findMtgCardImage(argument) {
         let image_uri: string;
         mtgHandler.getCard(argument, function(res) {
-             let imageTag = "IMAGE: " + res.image_uri;
+             let imageTag:string;
+             if(res.image_uri != null)
+                 imageTag = "IMAGE: " + res.image_uri;
+             else
+                 imageTag = "IMAGE: " + "https://media.giphy.com/media/WCwFvyeb6WJna/giphy.gif";
              networkManager.serverBroadcast(imageTag);            
         });
         
     }
     
+    function findMtgLegalInfo(argument) {
+        mtgHandler.getCard(argument, function(res){ 
+            networkManager.serverBroadcast("TEXT: " + res.name + "'s legalities:" + "<br>Standard: " + res.legalities.standard + "<br>Modern: " + res.legalities.modern 
+                + "<br>Commander: " + res.legalities.commander + "<br>Legacy: "+res.legalities.legacy + "<br>Vintage: " +res.legalities.vintage
+                + "<br>Pauper: " + res.legalities.pauper + "<br>Frontier " + res.legalities.frontier + "<br>Penny Dreadful: " + res.legalities.penny
+                + "<br>Duel: " + res.legalities.duel);
+               
+                
+            
+        });
+    }
     networkManager.login("anon" + (connectedUsers + 1));
 
     console.log("A user has connected. Users online: " + connectedUsers);
