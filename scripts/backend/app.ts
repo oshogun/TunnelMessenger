@@ -6,6 +6,7 @@ import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
 import {UserPersistence} from "./UserPersistence"
 import {User} from "../shared/User"
+import {MTGHandler} from "./Magic";
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -19,12 +20,15 @@ let urlencodedparser = bodyParser.urlencoded({extended: false});
 let allowedFolders = ["css", "js", "lib", "public", "user_images"];
 let port = process.env.PORT || 3000;
 let markdown = require("markdown").markdown;
+let mtgHandler = new MTGHandler();
 
 // app.use(bodyParser.urlencoded({
 //     extended: true
 // }));
 
 app.use(bodyParser.json());
+
+
 
 
 app.get("/TunnelMessenger", function(request, response) {
@@ -133,6 +137,7 @@ function commandContent(command) {
     return command.substr(command.indexOf(":") + 2);
 }
 
+
 let /*the*/ carnage /*begin*/ = 1200;
 let /*the*/zoeira /*begin*/ = false;
 
@@ -154,7 +159,9 @@ io.on("connection", function(socket) {
     let workspace: Workspace = {
         "changeNickCallback": changeNickCallback,
         "zoeiraEnable": function() { zoeira = true; },
-        "zoeiraDisable": function() { zoeira = false; }
+        "zoeiraDisable": function() { zoeira = false; },
+        "findMtgCardImage": findMtgCardImage,
+        "socket": socket,
     };
 
     let commandLoader = new CommandLoader();
@@ -179,10 +186,21 @@ io.on("connection", function(socket) {
         }
     }
 
+     function findMtgCardImage(argument) {
+        let image_uri: string;
+        mtgHandler.getCard(argument, function(res) {
+             let imageTag ="TEXT: <img src=" + res.image_uri; + ">";
+             console.log("kk eae men sente essa carta", res.image_uri);
+             socket.broadcast.emit("chatMessage", imageTag);
+             
+        });
+        
+    }
+    
     networkManager.login("anon" + (connectedUsers + 1));
 
     console.log("A user has connected. Users online: " + connectedUsers);
-
+  
     socket.on("chatMessage", function(message) {
         let messagePieces = message.split(" ");
         let command = <Command> commandLoader.getCommand(message);
@@ -273,6 +291,7 @@ io.on("connection", function(socket) {
         networkManager.send(MessageTarget.OTHERS, "stoppedTyping");
     });
 });
+
 
 http.listen(port, function(){
     console.log("Listening on port " + port);

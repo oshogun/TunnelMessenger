@@ -68,6 +68,12 @@ export let std: CommandPackage = {
                 },
                 "secret": true
             },
+            "/mtg": {
+                "broadcast":true,
+                "description":"Não é uma prova, é um texte",
+                "parameters": 1,
+                "result": workspace["findMtgCardImage"]
+            },
             "/nick": {
                 "broadcast": false,
                 "description": "Changes the nickname of the user",
