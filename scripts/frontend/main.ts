@@ -3,7 +3,7 @@
 import {Audio} from "./Audio"
 import {Chat} from "../shared/Chat"
 import {MessageFactory} from "../shared/MessageFactory"
-import {User} from "../shared/User"
+import {User, UserType} from "../shared/User"
 
 declare var io;
 
@@ -102,7 +102,8 @@ $(document).ready(function() {
 
     function processMessage(name: string, content: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
-            dummyUsers[name] = new User(name, name + " da Silva", name + "@chatBox.com", "123456");
+            let authorType = (name == "SERVER") ? UserType.SERVER : UserType.NORMAL;
+            dummyUsers[name] = new User(authorType, name, name + " da Silva", name + "@chatBox.com", "123456");
         }
 
         let message = MessageFactory.getInstance(content, dummyUsers[name], new Date());

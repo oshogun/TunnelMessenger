@@ -1,11 +1,20 @@
 
+export enum UserType {
+    NORMAL, SERVER, ADMIN
+}
+
 export class User {
-    constructor(nickname: string, fullName: string, email: string, password: string) {
+    constructor(type: UserType, nickname: string, fullName: string, email: string, password: string) {
+        this.type = type;
         this.nickname = nickname;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.subnick = "";
+    }
+
+    public getType(): UserType {
+        return this.type;
     }
 
     public getNickname(): string {
@@ -32,6 +41,7 @@ export class User {
         node.innerHTML = this.nickname;
     }
 
+    private type: UserType;
     private nickname: string;
     private fullName: string;
     private email: string;

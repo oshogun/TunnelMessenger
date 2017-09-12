@@ -83,6 +83,14 @@ input {
 	content: " says: ";
 }
 
+.messageBlock.type_SERVER .author {
+	color: white;
+}
+
+.messageBlock.type_SERVER .content {
+	color: red;
+}
+
 .messageBlock .content {
 	padding-left: 20px;
 	color: #f4dc42;

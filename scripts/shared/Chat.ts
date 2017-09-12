@@ -1,5 +1,5 @@
 import {Message} from "./Message"
-import {User} from "./User"
+import {User, UserType} from "./User"
 import {utils} from "./Utils"
 
 export class Chat {
@@ -41,6 +41,9 @@ export class Chat {
         let container = <HTMLDivElement> utils.create("div", {
             className: "messageBlock"
         });
+
+        let authorType = lastMessage.getAuthor().getType();
+        container.classList.add("type_" + UserType[authorType]);
 
         // Author
         let authorContainer = <HTMLDivElement> utils.create("div", {

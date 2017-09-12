@@ -1,5 +1,5 @@
 import {Settings} from "./Settings"
-import {User} from "./User"
+import {User, UserType} from "./User"
 
 export interface Message {
 	display(node: HTMLElement, callback?: () => void): void;

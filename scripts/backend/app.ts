@@ -5,7 +5,7 @@ import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
 import {UserPersistence} from "./UserPersistence"
-import {User} from "../shared/User"
+import {User, UserType} from "../shared/User"
 import {MTGHandler} from "./Magic";
 
 // removes "js/backend" from the end
@@ -54,7 +54,7 @@ app.post("/register", urlencodedparser, function(request, response) {
     if (password != password_verify) {
         console.log("passwords don't match");
     } else {
-        let newUser = new User(username,full_name,email,password);
+        let newUser = new User(UserType.NORMAL, username,full_name,email,password);
 
         UserPersistence.register(newUser).then(function(success) {
             if (success) {
