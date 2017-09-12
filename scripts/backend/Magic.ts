@@ -1,4 +1,6 @@
-declare function require(name: string);
+import * as https from "https";
+import * as qs from "querystring";
+import * as url from "url";
 
 export class MTGHandler {
 	constructor() {
@@ -33,10 +35,7 @@ export class MTGHandler {
 }
 
 function APIRequest(uri: string, cb: (res: any) => void, preserve: boolean = false, _partialData = []) {
-    let https = require("https");
-    let qs = require("querystring");
-    let url = require("url");
-
+  
     let parsedUrl = url.parse(uri);
     let query = qs.parse(parsedUrl.query);
     if (!query.format) {
