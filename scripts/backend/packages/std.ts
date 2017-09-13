@@ -105,6 +105,15 @@ export let std: CommandPackage = {
                 },
                 "secret": true
             },
+            "/video": {
+                "broadcast": false,
+                "description": "Sends an embedded video (youtube video ID as parameter)",
+                "parameters": 1,
+                "result": function(videoId) {
+                    let url = "https://www.youtube.com/embed/" + videoId;
+                    return "TEXT: <iframe width='560' height='315' src='" + url + "' frameborder='0' allowfullscreen></iframe>";
+                }
+            },
             "/whoami": {
                 "broadcast": true,
                 "description": "Shows your nickname",
