@@ -55,8 +55,22 @@ export class SimpleBoardRenderer implements BoardRenderer {
 	}
 
 	public receiveMove(from: Position, to: Position): void {
+		this.processMove(from, to);
+		this.locked = false;
+	}
+
+	private processMove(from: Position, to: Position): void {
 		let moveFeedback = this.controller.move(from, to);
 		this.update(moveFeedback);
+	}
+
+	private play(from: Position, to: Position): void {
+		let moveFeedback = this.controller.move(from, to);
+		if (moveFeedback.delta.length > 0) {
+			this.update(moveFeedback);
+			this.network.send([from, to]);
+			this.locked = true;
+		}
 	}
 
 	private update(moveFeedback: MoveFeedback): void {
@@ -148,6 +162,10 @@ export class SimpleBoardRenderer implements BoardRenderer {
 
 		let self = this;
 		cell.addEventListener("click", function() {
+			if (self.locked) {
+				return;
+			}
+
 			self.clearPossibleMoveHighlight();
 
 			let moveOrigin = self.moveOrigin;
@@ -156,8 +174,7 @@ export class SimpleBoardRenderer implements BoardRenderer {
 
 				for (let move of self.possibleMoves) {
 					if (position.row == move.row && position.column == move.column) {
-						self.receiveMove(moveOrigin, position);
-						self.network.send([moveOrigin, position]);
+						self.play(moveOrigin, position);
 
 						moveOrigin = null;
 						self.possibleMoves = [];
@@ -215,4 +232,5 @@ export class SimpleBoardRenderer implements BoardRenderer {
 	private possibleMoves: Position[] = [];
 
 	private network: Network;
+	private locked: boolean = false;
 }
