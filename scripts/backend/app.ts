@@ -1,6 +1,7 @@
 /// <reference path="../defs/node.d.ts" />
 
 import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
+import {InviteSystem} from "./InviteSystem"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
@@ -27,8 +28,6 @@ let mtgHandler = new MTGHandler();
 // }));
 
 app.use(bodyParser.json());
-
-
 
 
 app.get("/TunnelMessenger", function(request, response) {
@@ -137,6 +136,10 @@ function commandContent(command) {
     return command.substr(command.indexOf(":") + 2);
 }
 
+function uid(): string {
+    let id = Math.round(Math.random() * 1e10).toString();
+    return (+new Date()) + "_" + id;
+}
 
 let /*the*/ carnage /*begin*/ = 1200;
 let /*the*/zoeira /*begin*/ = false;
@@ -147,7 +150,9 @@ if (process.argv.length > 2 && process.argv[2] == "1") {
 }
 
 let userManager = new UserManager();
-userManager.addUser(0, "SERVER");
+userManager.addUser("0", "SERVER");
+
+let inviteSystem = new InviteSystem();
 
 let connectedUsers = 0;
 
@@ -161,7 +166,11 @@ io.on("connection", function(socket) {
         "zoeiraEnable": function() { zoeira = true; },
         "zoeiraDisable": function() { zoeira = false; },
         "findMtgCardImage": findMtgCardImage,
-        "findMtgLegalInfo": findMtgLegalInfo
+        "findMtgLegalInfo": findMtgLegalInfo,
+        "senderName": function() { return networkManager.user(); },
+        "gameInvite": gameInvite,
+        "serverToSender": function(message) { networkManager.serverToSender(message); },
+        "serverToUser": serverToUser
     };
 
     let commandLoader = new CommandLoader();
@@ -186,30 +195,41 @@ io.on("connection", function(socket) {
         }
     }
 
-     function findMtgCardImage(argument) {
+    function findMtgCardImage(argument: string) {
         let image_uri: string;
         mtgHandler.getCard(argument, function(res) {
              let imageTag:string;
-             if(res.image_uri != null)
-                 imageTag = "IMAGE: " + res.image_uri;
-             else
-                 imageTag = "IMAGE: " + "https://media.giphy.com/media/WCwFvyeb6WJna/giphy.gif";
+             if (res.image_uri != null) {
+                imageTag = "IMAGE: " + res.image_uri;
+             } else {
+                imageTag = "IMAGE: " + "https://media.giphy.com/media/WCwFvyeb6WJna/giphy.gif";
+             }
              networkManager.serverBroadcast(imageTag);            
         });
-        
     }
     
-    function findMtgLegalInfo(argument) {
+    function findMtgLegalInfo(argument: string) {
         mtgHandler.getCard(argument, function(res){ 
             networkManager.serverBroadcast("TEXT: " + res.name + "'s legalities:" + "<br>Standard: " + res.legalities.standard + "<br>Modern: " + res.legalities.modern 
                 + "<br>Commander: " + res.legalities.commander + "<br>Legacy: "+res.legalities.legacy + "<br>Vintage: " +res.legalities.vintage
                 + "<br>Pauper: " + res.legalities.pauper + "<br>Frontier " + res.legalities.frontier + "<br>Penny Dreadful: " + res.legalities.penny
                 + "<br>Duel: " + res.legalities.duel);
-               
-                
-            
         });
     }
+
+    function gameInvite(targetUser: string, message: string,
+        onAccept: () => void, onReject: () => void): void {
+
+        let id = uid();
+        let sender = networkManager.user();
+        inviteSystem.register(id, sender, targetUser, onAccept, onReject);
+        networkManager.serverToUser(targetUser, "INVITE: " + message, id);
+    }
+
+    function serverToUser(targetUser: string, message: string) {
+        networkManager.serverToUser(targetUser, message);
+    }
+
     networkManager.login("anon" + (connectedUsers + 1));
 
     console.log("A user has connected. Users online: " + connectedUsers);
@@ -270,8 +290,7 @@ io.on("connection", function(socket) {
             url = srcMatches[1];
         } else {
             let base64 = imageTag.substr(imageTag.indexOf(",") + 1);
-            let id = Math.round(Math.random() * 1e10).toString();
-            url = "/user_images/" + (+new Date()) + "_" + id;
+            url = "/user_images/" + uid();
 
             let fs = require("fs");
             try {
@@ -303,6 +322,16 @@ io.on("connection", function(socket) {
     // informs other clients that someone stopped typing
     socket.on("stoppedTyping", function() {
         networkManager.send(MessageTarget.OTHERS, "stoppedTyping");
+    });
+
+    socket.on("acceptInvite", function(id: string) {
+        console.log("[ACCEPT]", id);
+        inviteSystem.accept(id);
+    });
+
+    socket.on("rejectInvite", function(id: string) {
+        console.log("[REJECT]", id);
+        inviteSystem.reject(id);
     });
 });
 

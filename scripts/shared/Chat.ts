@@ -11,6 +11,7 @@ export class Chat {
 
     public addMessage(message: Message, callback?: () => void): void {
         let previousMessage = this.messages[this.messages.length - 1];
+        message.setChat(this);
         this.messages.push(message);
 
         if (!previousMessage || message.getAuthor() != previousMessage.getAuthor()) {
@@ -33,6 +34,14 @@ export class Chat {
         this.node.innerHTML = "";
         this.messages = [];
         this.lastMessageBlock = null;
+    }
+
+    public setSocketHandler(socket: any): void {
+        this.socket = socket;
+    }
+
+    public getSocketHandler(): any {
+        return this.socket;
     }
 
     private spawnMessageBlock(): void {
@@ -67,7 +76,7 @@ export class Chat {
             className: "content"
         });
 
-        (<HTMLElement> this.lastMessageBlock).appendChild(contentContainer);
+        this.lastMessageBlock!.appendChild(contentContainer);
         message.display(contentContainer, callback);
     }
 
@@ -76,4 +85,5 @@ export class Chat {
     private messages: Message[] = [];
     private lastMessageBlock: HTMLElement|null;
     private node: HTMLElement;
+    private socket: any;
 }

@@ -101,6 +101,10 @@ input {
 	hyphens: auto;
 }
 
+.messageBlock .content .invite .reject_button {
+	margin-left: 5px;
+}
+
 .button {
 	background-color: darkslategrey;
 	border: none;

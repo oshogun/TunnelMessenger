@@ -1,4 +1,4 @@
-import {Message, ImageMessage, TextMessage} from "./Message"
+import {Message, ImageMessage, TextMessage, InviteMessage} from "./Message"
 import {User} from "./User"
 
 export class MessageFactory {
@@ -14,6 +14,9 @@ export class MessageFactory {
                 break;
             case "IMAGE":
                 message = new ImageMessage(content, author, date);
+                break;
+            case "INVITE":
+                message = new InviteMessage(content, author, date);
                 break;
             default:
                 throw Error("Unknown message type");

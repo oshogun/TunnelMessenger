@@ -5,14 +5,22 @@ import {Chat} from "../shared/Chat"
 import {MessageFactory} from "../shared/MessageFactory"
 import {User, UserType} from "../shared/User"
 
-declare var io;
+declare var io: {
+    (): {
+        emit: (type: string, ...args: any[]) => void;
+        on: (type: string, handler: (...args: any[]) => void) => void;
+    }
+}
 
 $(document).ready(function() {
     console.log("Server running.");
 
     let socket = io();
     let audio = new Audio("/public/notify.ogg", document.body);
+
     let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
+    chat.setSocketHandler(socket);
+
     let defaultTitle = document.title;
     let unreadMessages = 0;
 
@@ -100,14 +108,25 @@ $(document).ready(function() {
     $(document).focus(onPageFocus);
     window.addEventListener("focus", onPageFocus);
 
-    function processMessage(name: string, content: string) {
+    function processMessage(name: string, content: string, id?: string) {
         if (!dummyUsers.hasOwnProperty(name)) {
             let authorType = (name == "SERVER") ? UserType.SERVER : UserType.NORMAL;
-            dummyUsers[name] = new User(authorType, name, name + " da Silva", name + "@chatBox.com", "123456");
+            dummyUsers[name] = new User(
+                authorType,
+                name,
+                name + " da Silva",
+                name + "@chatBox.com",
+                "123456"
+            );
         }
 
-        let message = MessageFactory.getInstance(content, dummyUsers[name], new Date());
-       
+        let user = dummyUsers[name];
+        let message = MessageFactory.getInstance(content, user, new Date());
+
+        if (id) {
+            message.setId(id);
+        }
+
         chat.addMessage(message, function() {
             $("#chatBox").scrollTop(1e10);
         });
@@ -119,14 +138,14 @@ $(document).ready(function() {
 
     socket.on("sendMessage", processMessage);
 
-    socket.on("chatMessage", function(name, content) {
+    socket.on("chatMessage", function(name: string, content: string, id?: string) {
         if (!document.hasFocus()) {
             unreadMessages++;
             document.title = "(" + unreadMessages + ") " + defaultTitle;
             audio.play();
         }
 
-        processMessage(name, content);
+        processMessage(name, content, id);
     });
 
     socket.on("isTyping", function(user) {

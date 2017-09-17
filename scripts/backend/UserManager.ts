@@ -1,15 +1,16 @@
+import {SocketId} from "./Settings"
 
 export class UserManager {
-    public addUser(socketId: number, name: string): void {
+    public addUser(socketId: SocketId, name: string): void {
         this.connectedUsers[socketId] = name;
     }
 
-    public login(socketId: number, name: string): void {
+    public login(socketId: SocketId, name: string): void {
         this.connectedUsers[socketId] = name;
         this.nicknames.push([socketId, name]);
     }
 
-    public logout(socketId: number): void {
+    public logout(socketId: SocketId): void {
         for (let i = 0; i < this.nicknames.length; i++) {
             if (this.nicknames[i][0] == socketId) {
                 this.nicknames.splice(i, 1);
@@ -20,7 +21,7 @@ export class UserManager {
         delete this.connectedUsers[socketId];
     }
 
-    public renameUser(socketId: number, newName: string): void {
+    public renameUser(socketId: SocketId, newName: string): void {
         for (let i = 0; i < this.nicknames.length; i++) {
             if (this.nicknames[i][0] == socketId) {
                 this.nicknames[i][1] = newName;
@@ -30,14 +31,26 @@ export class UserManager {
         this.connectedUsers[socketId] = newName;
     }
 
-    public getName(socketId: number) {
+    public getName(socketId: SocketId) {
         return this.connectedUsers[socketId];
     }
 
-    public getNicknames(): [number, string][] {
+    public getNicknames(): [SocketId, string][] {
         return this.nicknames;
     }
 
-    private connectedUsers: {[socketId: number]: string} = {};
-    private nicknames: [number, string][] = [];
+    public getSocketId(username: string): SocketId|null {
+        for (let socketId in this.connectedUsers) {
+            if (this.connectedUsers.hasOwnProperty(socketId)) {
+                if (this.connectedUsers[socketId] == username) {
+                    return socketId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private connectedUsers: {[socketId: string]: string} = {};
+    private nicknames: [SocketId, string][] = [];
 }

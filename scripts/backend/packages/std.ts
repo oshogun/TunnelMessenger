@@ -10,13 +10,34 @@ export let std: CommandPackage = {
                 "description": "Stats a game of chess",
                 "parameters": 1,
                 "result": function(targetUser) {
-                    if (workspace["isPackageLoaded"]("chess")) {
-                        return "TEXT: There's already a game in progress.";
-                    }
+                    // if (workspace["isPackageLoaded"]("chess")) {
+                    //     return "TEXT: There's already a game in progress.";
+                    // }
 
-                    workspace["addPackage"]("chess");
-                    return "TEXT: The game shall begin!";
-                }
+                    // workspace["addPackage"]("chess");
+                    let senderName = workspace["senderName"]();
+
+                    let onAccept = function() {
+                        let message = "TEXT: Your invitation to play Chess against "
+                                    + senderName + " has been accepted.<br>"
+                                    + "The game will start soon.";
+                        workspace["serverToSender"](message);
+                    };
+
+                    let onReject = function() {
+                        let message = "TEXT: Your invitation to play Chess against "
+                                    + senderName + " has been declined.";
+                        workspace["serverToSender"](message);
+                    };
+
+                    let message = "The user " + workspace["senderName"]()
+                                + " invited you to play Chess.";
+
+                    workspace["gameInvite"](targetUser, message, onAccept, onReject);
+
+                    return "TEXT: An invitation has been sent.";
+                },
+                "secret": true
             },
             "/clear": {
                 "broadcast": false,
