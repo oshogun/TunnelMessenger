@@ -36,4 +36,6 @@ $(document).ready(function() {
 	network.onReceive(function(data: any) {
 		renderer.receiveMove(data[0], data[1]);
 	});
+
+	window["network"] = network;
 });

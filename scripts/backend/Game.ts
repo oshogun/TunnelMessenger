@@ -8,10 +8,11 @@ const frameSizeTable = {
 
 export class Game {
 	constructor(networkManager: NetworkManager, workspace: Workspace,
-		from: SocketId, to: SocketId) {
+		id: string, from: SocketId, to: SocketId) {
 
 		this.networkManager = networkManager;
 		this.workspace = workspace;
+		this.id = id;
 		this.players = [from, to];
 	}
 
@@ -22,14 +23,30 @@ export class Game {
 
 		let url = "/games/" + gameName + "/index.html";
 		let dimensions = frameSizeTable[gameName];
-		this.sendToPlayers("gameLaunch", url, dimensions[0], dimensions[1]);
+
+		for (let i = 0; i < this.players.length; i++) {
+			this.sendToPlayer(i, "gameLaunch", i, url, this.id,
+				dimensions[0], dimensions[1]);
+		}
 	}
 
-	private sendToPlayers(type: string, ...otherArgs: any[]): void {
+	public receiveData(senderIndex: number, data: any): void {
+		for (let i = 0; i < this.players.length; i++) {
+			if (i != senderIndex) {
+				this.sendToPlayer(i, "gameData", data);
+			}
+		}
+	}
+
+	private sendToPlayer(playerIndex: number, type: string,
+		...otherArgs: any[]): void {
+
 		let networkManager = this.networkManager;
-		networkManager.sendToSockets(this.players, type, ...otherArgs);
+		let receivers = [this.players[playerIndex]];
+		networkManager.sendToSockets(receivers, type, ...otherArgs);
 	}
 
+	private id: string;
 	private networkManager: NetworkManager;
 	private players: SocketId[];
 	private workspace: Workspace;

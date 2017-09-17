@@ -1,6 +1,7 @@
 /// <reference path="../defs/node.d.ts" />
 
 import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
+import {Game} from "./Game"
 import {InviteSystem} from "./InviteSystem"
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
@@ -154,6 +155,8 @@ userManager.addUser("0", "SERVER");
 
 let inviteSystem = new InviteSystem();
 
+let activeGames: {[id: string]: Game} = {};
+
 let connectedUsers = 0;
 
 io.on("connection", function(socket) {
@@ -170,7 +173,8 @@ io.on("connection", function(socket) {
         "senderName": function() { return networkManager.user(); },
         "gameInvite": gameInvite,
         "serverToSender": function(message) { networkManager.serverToSender(message); },
-        "serverToUser": serverToUser
+        "serverToUser": serverToUser,
+        "registerGame": function(id, game) { activeGames[id] = game; }
     };
 
     let commandLoader = new CommandLoader();
@@ -332,6 +336,10 @@ io.on("connection", function(socket) {
 
     socket.on("rejectInvite", function(id: string) {
         inviteSystem.reject(id);
+    });
+
+    socket.on("gameData", function(id: string, senderIndex: number, data: any) {
+        activeGames[id].receiveData(senderIndex, data);
     });
 });
 

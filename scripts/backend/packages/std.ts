@@ -19,14 +19,15 @@ export let std: CommandPackage = {
                     // workspace["addPackage"]("chess");
                     let senderName = workspace["senderName"]();
 
-                    let onAccept = function(from: SocketId, to: SocketId) {
+                    let onAccept = function(id: string, from: SocketId, to: SocketId) {
                         let message = "TEXT: Your invitation to play Chess against "
                                     + senderName + " has been accepted.<br>"
                                     + "The game will start soon.";
                         workspace["serverToSender"](message);
 
-                        let game = new Game(networkManager, workspace, from, to);
+                        let game = new Game(networkManager, workspace, id, from, to);
                         game.launch("chess");
+                        workspace["registerGame"](id, game);
                     };
 
                     let onReject = function() {

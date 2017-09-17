@@ -6,13 +6,14 @@ import {Game} from "./Game"
 import {MessageFactory} from "../shared/MessageFactory"
 import {User, UserType} from "../shared/User"
 
-declare var io: {
-    (): {
-        emit: (type: string, ...args: any[]) => void;
-        on: (type: string, handler: (...args: any[]) => void) => void;
-    }
-}
-
+// declare var io: {
+//     (): {
+//         emit: (type: string, ...args: any[]) => void;
+//         on: (type: string, handler: (...args: any[]) => void) => void;
+//     }
+// }
+declare var io;
+ 
 $(document).ready(function() {
     console.log("Server running.");
 
@@ -26,6 +27,8 @@ $(document).ready(function() {
     let unreadMessages = 0;
 
     let typingTimeout: number|null = null;
+
+    let game: Game;
 
     function stopTypingCallback() {
         socket.emit("stoppedTyping");
@@ -181,15 +184,23 @@ $(document).ready(function() {
         audio.unmute();
     });
 
-    function doit(url: string, width: number, height: number) {
-        let game = new Game(url);
+    function doit(playerIndex: number, url: string, id: string,
+        width: number, height: number) {
+
+        game = new Game(socket, playerIndex, url, id);
         game.launch(width, height);
     }
 
-    socket.on("gameLaunch", function(url: string, width: number, height: number) {
-        doit(url, width, height);
+    socket.on("gameLaunch", function(playerIndex: number, url: string,
+        id: string, width: number, height: number) {
+
+        doit(playerIndex, url, id, width, height);
     });
 
-    // doit("/games/chess/index.html", 730, 738);
+    socket.on("gameData", function(data: any) {
+        game.receiveData(data);
+    });
+
+    // doit(0, "/games/chess/index.html", "0", 730, 738);
 });
 

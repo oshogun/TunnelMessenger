@@ -1,4 +1,7 @@
 type Callback = (data: any) => void;
+type Proxy = {
+	send: Callback;
+};
 
 export class Network {
 	public static getInstance(): Network {
@@ -11,12 +14,18 @@ export class Network {
 
 	private constructor() {}
 
-	public setProxy(proxy: any): void {
+	public setProxy(proxy: Proxy): void {
 		this.proxy = proxy;
 	}
 
 	public send(data: any): void {
-		this.proxy.send(data);
+		if (this.proxy !== null) {
+			this.proxy.send(data);
+		}
+	}
+
+	public receive(data: any): void {
+		this.receiveHandler(data);
 	}
 
 	public onReceive(callback: Callback): void {
@@ -25,5 +34,5 @@ export class Network {
 
 	private static instance: Network|null = null;
 	private receiveHandler: Callback;
-	private proxy: any;
+	private proxy: Proxy|null = null;
 }
