@@ -174,7 +174,8 @@ io.on("connection", function(socket) {
         "gameInvite": gameInvite,
         "serverToSender": function(message) { networkManager.serverToSender(message); },
         "serverToUser": serverToUser,
-        "registerGame": function(id, game) { activeGames[id] = game; }
+        "registerGame": function(id, game) { activeGames[id] = game; },
+        "closeGames": closeGames
     };
 
     let commandLoader = new CommandLoader();
@@ -234,6 +235,24 @@ io.on("connection", function(socket) {
 
     function serverToUser(targetUser: string, message: string) {
         networkManager.serverToUser(targetUser, message);
+    }
+
+    function closeGames() {
+        for (let id in activeGames) {
+            if (activeGames.hasOwnProperty(id)) {
+                let game = activeGames[id];
+                let sockets = game.getPlayerSockets();
+                for (let socketId of sockets) {
+                    if (socketId == networkManager.id()) {
+                        game.abort();
+                        delete activeGames[id];
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     networkManager.login("anon" + (connectedUsers + 1));

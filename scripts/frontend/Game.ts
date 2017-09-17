@@ -1,3 +1,5 @@
+/// <reference path="../../node_modules/@types/es6-promise/index.d.ts" />
+
 import {utils} from "../shared/Utils"
 
 type Callback = (data: any) => void;
@@ -11,6 +13,12 @@ interface Network {
 	receive(data: any): void;
 }
 
+function delay(time: number): Promise<void> {
+	return new Promise<void>(function(resolve, reject) {
+		setTimeout(resolve, time);
+	});
+}
+
 export class Game {
 	constructor(socket: any, playerIndex: number, url: string, id: string) {
 		this.socket = socket;
@@ -20,6 +28,22 @@ export class Game {
 	}
 
 	public launch(width: number, height: number): void {
+		let iframe = this.adjustUI(width, height);
+		this.catchNetworkInstance(iframe);
+	}
+
+	public abort(): void {
+		$("#gameContainer").remove();
+
+		let userList = document.getElementById("userList")!;
+		userList.style.display = "";
+	}
+
+	public receiveData(data: any): void {
+		this.network.receive(data);
+	}
+
+	private adjustUI(width: number, height: number): HTMLIFrameElement {
 		let container = utils.create("div", {
 			id: "gameContainer"
 		});
@@ -38,25 +62,33 @@ export class Game {
 		let chat = document.getElementById("chat")!;
 		$(container).insertAfter(chat);
 
+		return iframe;
+	}
+
+	private catchNetworkInstance(iframe: HTMLIFrameElement): void {
 		let id = this.id;
 		let playerIndex = this.playerIndex;
 		let socket = this.socket;
 		let self = this;
 
-		$(iframe).ready(function() {
-			let network = <Network> iframe.contentWindow["network"];
-			self.network = network;
-
-			network.setProxy({
-				send: function(data: any) {
-					socket.emit("gameData", id, playerIndex, data);
+		let attempt = function() {
+			delay(100).then(function() {
+				let network = <Network> iframe.contentWindow["network"];
+				if (!network) {
+					return attempt();
 				}
-			});
-		});
-	}
 
-	public receiveData(data: any): void {
-		this.network.receive(data);
+				self.network = network;
+
+				network.setProxy({
+					send: function(data: any) {
+						socket.emit("gameData", id, playerIndex, data);
+					}
+				});
+			});
+		};
+
+		$(iframe).ready(attempt);
 	}
 
 	private id: string;

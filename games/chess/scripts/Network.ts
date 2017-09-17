@@ -12,7 +12,10 @@ export class Network {
 		return this.instance;
 	}
 
-	private constructor() {}
+	private constructor() {
+		// Enables the server to access this instance
+		window["network"] = this;
+	}
 
 	public setProxy(proxy: Proxy): void {
 		this.proxy = proxy;

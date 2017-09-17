@@ -25,24 +25,44 @@ export class Game {
 		let dimensions = frameSizeTable[gameName];
 
 		for (let i = 0; i < this.players.length; i++) {
-			this.sendToPlayer(i, "gameLaunch", i, url, this.id,
+			this.sendToPlayers([i], "gameLaunch", i, url, this.id,
 				dimensions[0], dimensions[1]);
 		}
 	}
 
-	public receiveData(senderIndex: number, data: any): void {
+	public abort(): void {
+		let receivers: number[] = [];
 		for (let i = 0; i < this.players.length; i++) {
-			if (i != senderIndex) {
-				this.sendToPlayer(i, "gameData", data);
-			}
+			receivers.push(i);
 		}
+
+		this.sendToPlayers(receivers, "gameAbort");
 	}
 
-	private sendToPlayer(playerIndex: number, type: string,
+	public receiveData(senderIndex: number, data: any): void {
+		let receivers: number[] = [];
+		for (let i = 0; i < this.players.length; i++) {
+			if (i != senderIndex) {
+				receivers.push(i);
+			}
+		}
+
+		this.sendToPlayers(receivers, "gameData", data);
+	}
+
+	public getPlayerSockets(): SocketId[] {
+		return this.players;
+	}
+
+	private sendToPlayers(indexList: number[], type: string,
 		...otherArgs: any[]): void {
 
+		let players = this.players;
+		let receivers = indexList.map(function(index) {
+			return players[index];
+		});
+
 		let networkManager = this.networkManager;
-		let receivers = [this.players[playerIndex]];
 		networkManager.sendToSockets(receivers, type, ...otherArgs);
 	}
 

@@ -7,9 +7,21 @@ import {SocketId} from "../Settings"
 export let std: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
         let commands: CommandGroup = {
+            "/abortgames": {
+                "broadcast": true,
+                "description": "Aborts all games in progress",
+                "result": function() {
+                    if (workspace["closeGames"]()) {
+                        return "TEXT: Game aborted.";
+                    } else {
+                        return "TEXT: There are no games in progress.";
+                    }
+                },
+                "secret": true
+            },
             "/chess": {
                 "broadcast": true,
-                "description": "Stats a game of chess",
+                "description": "Invites a given user to play chess",
                 "parameters": 1,
                 "result": function(targetUser) {
                     // if (workspace["isPackageLoaded"]("chess")) {
@@ -138,7 +150,9 @@ export let std: CommandPackage = {
                 "parameters": 1,
                 "result": function(videoId) {
                     let url = "https://www.youtube.com/embed/" + videoId;
-                    return "TEXT: <iframe width='560' height='315' src='" + url + "' frameborder='0' allowfullscreen></iframe>";
+                    let iframe = "<iframe width='560' height='315' src='"
+                        + url + "' frameborder='0' allowfullscreen></iframe>";
+                    return "TEXT: " + iframe;
                 }
             },
             "/whoami": {

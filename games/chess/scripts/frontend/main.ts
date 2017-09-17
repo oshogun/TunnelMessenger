@@ -37,5 +37,4 @@ $(document).ready(function() {
 		renderer.receiveMove(data[0], data[1]);
 	});
 
-	window["network"] = network;
 });

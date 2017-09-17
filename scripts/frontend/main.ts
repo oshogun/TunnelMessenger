@@ -28,7 +28,7 @@ $(document).ready(function() {
 
     let typingTimeout: number|null = null;
 
-    let game: Game;
+    let game: Game|null = null;
 
     function stopTypingCallback() {
         socket.emit("stoppedTyping");
@@ -184,23 +184,28 @@ $(document).ready(function() {
         audio.unmute();
     });
 
-    function doit(playerIndex: number, url: string, id: string,
-        width: number, height: number) {
-
-        game = new Game(socket, playerIndex, url, id);
-        game.launch(width, height);
-    }
-
     socket.on("gameLaunch", function(playerIndex: number, url: string,
         id: string, width: number, height: number) {
 
-        doit(playerIndex, url, id, width, height);
+        game = new Game(socket, playerIndex, url, id);
+        game.launch(width, height);
     });
 
     socket.on("gameData", function(data: any) {
+        if (game === null) {
+            throw Error("Unexpected game data");
+        }
+
         game.receiveData(data);
     });
 
-    // doit(0, "/games/chess/index.html", "0", 730, 738);
+    socket.on("gameAbort", function() {
+        if (game === null) {
+            throw Error("Unexpected game abort request");
+        }
+
+        game.abort();
+        game = null;
+    });
 });
 

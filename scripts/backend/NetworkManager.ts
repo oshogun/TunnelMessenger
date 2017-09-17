@@ -81,6 +81,10 @@ export class NetworkManager {
         return this.getName(this.id());
     }
 
+    public id(): SocketId {
+        return this.socket.id;
+    }
+
     private server(): string {
         return this.getName("0");
     }
@@ -91,10 +95,6 @@ export class NetworkManager {
 
     private nicknames() {
         return this.userManager.getNicknames();
-    }
-
-    private id(): SocketId {
-        return this.socket.id;
     }
 
     private io: any;
