@@ -223,14 +223,19 @@ io.on("connection", function(socket) {
     }
 
     function gameInvite(targetUser: string, message: string,
-        onAccept: () => void, onReject: () => void): void {
+        onAccept: () => void, onReject: () => void): boolean {
 
-        let id = uid();
         let senderSocket = userManager.getSocketId(networkManager.user())!;
         let receiverSocket = userManager.getSocketId(targetUser)!;
 
-        inviteSystem.register(id, senderSocket, receiverSocket, onAccept, onReject);
-        networkManager.serverToUser(targetUser, "INVITE: " + message, id);
+        if (senderSocket != receiverSocket) {
+            let id = uid();
+            inviteSystem.register(id, senderSocket, receiverSocket, onAccept, onReject);
+            networkManager.serverToUser(targetUser, "INVITE: " + message, id);
+            return true;
+        }
+
+        return false;
     }
 
     function serverToUser(targetUser: string, message: string) {

@@ -51,9 +51,11 @@ export let std: CommandPackage = {
                     let message = "The user " + workspace["senderName"]()
                                 + " invited you to play Chess.";
 
-                    workspace["gameInvite"](targetUser, message, onAccept, onReject);
-
-                    return "TEXT: An invitation has been sent.";
+                    if (workspace["gameInvite"](targetUser, message, onAccept, onReject)) {
+                        return "TEXT: An invitation has been sent.";
+                    } else {
+                        return "TEXT: You can't play against yourself.";
+                    }
                 },
                 "secret": true
             },
