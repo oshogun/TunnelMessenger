@@ -1,0 +1,12 @@
+remarks
+	 * Note that this method should assume that the move is valid
+	 * and was already performed (i.e this piece is already at the
+	 * "to" square).
+
+Chess special things:
+OK - the pawn as a whole
+   - check(mate)
+OK - castling
+OK - en passant
+?! - promotion
+Note: pin is a thing

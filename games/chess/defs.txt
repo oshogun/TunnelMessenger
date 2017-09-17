@@ -1,0 +1,1 @@
+jQuery.d.ts: https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/master/types/jquery/v2/index.d.ts

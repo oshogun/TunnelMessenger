@@ -1,0 +1,8 @@
+{
+  "name": "chess",
+  "version": "0.0.1",
+  "description": "",
+  "dependencies": {
+    "@types/es6-promise": "0.0.33"
+  }
+}
