@@ -2,6 +2,7 @@
 
 import {Audio} from "./Audio"
 import {Chat} from "../shared/Chat"
+import {Game} from "./Game"
 import {MessageFactory} from "../shared/MessageFactory"
 import {User, UserType} from "../shared/User"
 
@@ -179,5 +180,16 @@ $(document).ready(function() {
     socket.on("unmute", function() {
         audio.unmute();
     });
+
+    function doit(url: string, width: number, height: number) {
+        let game = new Game(url);
+        game.launch(width, height);
+    }
+
+    socket.on("gameLaunch", function(url: string, width: number, height: number) {
+        doit(url, width, height);
+    });
+
+    // doit("/games/chess/index.html", 730, 738);
 });
 

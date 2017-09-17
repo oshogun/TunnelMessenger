@@ -1,6 +1,8 @@
 import {Command, CommandGroup, CommandPackage, Workspace} from "../Commands"
+import {Game} from "../Game"
 import {MessageTarget} from "../MessageTarget"
 import {NetworkManager} from "../NetworkManager"
+import {SocketId} from "../Settings"
 
 export let std: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
@@ -17,11 +19,14 @@ export let std: CommandPackage = {
                     // workspace["addPackage"]("chess");
                     let senderName = workspace["senderName"]();
 
-                    let onAccept = function() {
+                    let onAccept = function(from: SocketId, to: SocketId) {
                         let message = "TEXT: Your invitation to play Chess against "
                                     + senderName + " has been accepted.<br>"
                                     + "The game will start soon.";
                         workspace["serverToSender"](message);
+
+                        let game = new Game(networkManager, workspace, from, to);
+                        game.launch("chess");
                     };
 
                     let onReject = function() {

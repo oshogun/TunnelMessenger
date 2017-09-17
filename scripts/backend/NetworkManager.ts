@@ -36,6 +36,18 @@ export class NetworkManager {
         method.apply(proxy, args);
     }
 
+    public sendToSockets(socketIds: SocketId[], type: string,
+        ...otherArgs: any[]): void {
+
+        let emitter: any = this.io;
+        for (let id of socketIds) {
+            emitter = emitter.to(id);
+        }
+
+        let args = [type].concat(otherArgs);
+        emitter.emit.apply(emitter, args);
+    }
+
     public serverToSender(message: string, id?: string): void {
         this.socket.emit("chatMessage", this.server(), message, id);
     }

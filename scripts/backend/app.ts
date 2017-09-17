@@ -18,7 +18,7 @@ let io = require('socket.io')(http);
 let path = require('path');
 let bodyParser = require("body-parser");
 let urlencodedparser = bodyParser.urlencoded({extended: false});
-let allowedFolders = ["css", "js", "lib", "public", "user_images"];
+let allowedFolders = ["css", "games", "js", "lib", "public", "user_images"];
 let port = process.env.PORT || 3000;
 let markdown = require("markdown").markdown;
 let mtgHandler = new MTGHandler();
@@ -221,8 +221,10 @@ io.on("connection", function(socket) {
         onAccept: () => void, onReject: () => void): void {
 
         let id = uid();
-        let sender = networkManager.user();
-        inviteSystem.register(id, sender, targetUser, onAccept, onReject);
+        let senderSocket = userManager.getSocketId(networkManager.user())!;
+        let receiverSocket = userManager.getSocketId(targetUser)!;
+
+        inviteSystem.register(id, senderSocket, receiverSocket, onAccept, onReject);
         networkManager.serverToUser(targetUser, "INVITE: " + message, id);
     }
 
@@ -325,12 +327,10 @@ io.on("connection", function(socket) {
     });
 
     socket.on("acceptInvite", function(id: string) {
-        console.log("[ACCEPT]", id);
         inviteSystem.accept(id);
     });
 
     socket.on("rejectInvite", function(id: string) {
-        console.log("[REJECT]", id);
         inviteSystem.reject(id);
     });
 });

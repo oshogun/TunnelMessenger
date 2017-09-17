@@ -1,6 +1,6 @@
 import {SocketId} from "./Settings"
 
-type Callback = () => void;
+type Callback = (from: SocketId, to: SocketId) => void;
 
 export class InviteSystem {
 	public register(id: string, from: SocketId, to: SocketId,
@@ -16,14 +16,16 @@ export class InviteSystem {
 
 	public accept(id: string): void {
 		if (this.invites.hasOwnProperty(id)) {
-			this.invites[id].onAccept();
+			let invite = this.invites[id];
+			invite.onAccept(invite.from, invite.to);
 			delete this.invites[id];
 		}
 	}
 
 	public reject(id: string): void {
 		if (this.invites.hasOwnProperty(id)) {
-			this.invites[id].onReject();
+			let invite = this.invites[id];
+			invite.onReject(invite.from, invite.to);
 			delete this.invites[id];
 		}
 	}

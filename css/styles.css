@@ -22,14 +22,20 @@ input {
 	background-color: rgba(37, 46, 61,0.8);
 }
 
+#pageContainer {
+	display: flex;
+	flex-direction: row;
+	height: 100%
+}
+
 #chat {
 	background-color: rgba(0, 0, 0,0.7);
 	border-right: 1px solid gray;
 	color: #00f991;
 	display: flex;
 	flex-direction: column;
+	flex: 1 1 auto;
 	height: 100%;
-	width: 70%;
 }
 
 #header {
@@ -130,8 +136,9 @@ input {
 	border-left: 1px solid gray;
 	color: white;
 	display: table;
-	float: right;
+	flex: 0 0 auto;
 	height: 100%;
+	margin-left: 10px;
 	width: 29%;
 }
 
@@ -143,6 +150,17 @@ input {
 	color:white;
 	vertical-align: top;
 	height: 8%;
+}
+
+#gameContainer {
+	display: flex;
+	flex-direction: column;
+	flex: 0 0 auto;
+}
+
+#gameFrame {
+	flex: 0 0 auto;
+	margin: auto;
 }
 
 span.table {
