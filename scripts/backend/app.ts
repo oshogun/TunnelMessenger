@@ -142,6 +142,10 @@ function uid(): string {
     return (+new Date()) + "_" + id;
 }
 
+function ucfirst(value: string): string {
+    return value[0].toUpperCase() + value.substr(1);
+}
+
 let /*the*/ carnage /*begin*/ = 1200;
 let /*the*/zoeira /*begin*/ = false;
 
@@ -156,8 +160,10 @@ userManager.addUser("0", "SERVER");
 let inviteSystem = new InviteSystem();
 
 let activeGames: {[id: string]: Game} = {};
+let gameIdTable: {[socketId: string]: string} = {};
 
 let connectedUsers = 0;
+let userCounter = 0;
 
 io.on("connection", function(socket) {
     connectedUsers++;
@@ -171,15 +177,20 @@ io.on("connection", function(socket) {
         "findMtgCardImage": findMtgCardImage,
         "findMtgLegalInfo": findMtgLegalInfo,
         "senderName": function() { return networkManager.user(); },
+        "getUserName": function(socketId) { return userManager.getName(socketId); },
         "gameInvite": gameInvite,
         "serverToSender": function(message) { networkManager.serverToSender(message); },
         "serverToUser": serverToUser,
-        "registerGame": function(id, game) { activeGames[id] = game; },
-        "closeGames": closeGames
+        "registerGame": registerGame,
+        "closeGames": closeGames,
+        "activeGames": function() { return activeGames; },
+        "listGames": listGames,
+        "spectate": spectate
     };
 
     let commandLoader = new CommandLoader();
     commandLoader.addPackage("std", networkManager, workspace);
+    commandLoader.addPackage("game_std", networkManager, workspace);
 
     extend(workspace, {
         "addPackage": function(packageName: string) {
@@ -242,25 +253,87 @@ io.on("connection", function(socket) {
         networkManager.serverToUser(targetUser, message);
     }
 
-    function closeGames() {
-        for (let id in activeGames) {
-            if (activeGames.hasOwnProperty(id)) {
-                let game = activeGames[id];
-                let sockets = game.getPlayerSockets();
-                for (let socketId of sockets) {
-                    if (socketId == networkManager.id()) {
-                        game.abort();
-                        delete activeGames[id];
-                        return true;
-                    }
+    function registerGame(id, game) {
+        activeGames[id] = game;
+        gameIdTable[networkManager.id()] = id;
+    }
+
+    function closeGames(): boolean {
+        let id = networkManager.id();
+
+        if (gameIdTable.hasOwnProperty(id)) {
+            let gameId = gameIdTable[id];
+            let game = activeGames[gameId];
+
+            let playerSockets = game.getPlayerSockets();
+            let playerIsParticipating: boolean = false;
+
+            for (let playerSocket of playerSockets) {
+                if (playerSocket == id) {
+                    playerIsParticipating = true;
+                    game.abort();
+                    delete activeGames[gameId];
+                    break;
                 }
             }
+
+            if (!playerIsParticipating) {
+                game.removeSpectator(id);
+            }
+
+            delete gameIdTable[id];
+            return true;
         }
 
         return false;
     }
 
-    networkManager.login("anon" + (connectedUsers + 1));
+    function listGames(): string {
+        let empty: boolean = true;
+        let result: string = "<ul>";
+
+        for (let id in activeGames) {
+            if (activeGames.hasOwnProperty(id)) {
+                empty = false;
+                let game = activeGames[id];
+                let sockets = game.getPlayerSockets();
+
+                let playerNames: string[] = [];
+                for (let socket of sockets) {
+                    playerNames.push(userManager.getName(socket));
+                }
+
+                result += "<li>";
+                result += "(" + id + ") " + ucfirst(game.getName()) + ": ";
+                result += playerNames.join(" vs ");
+                result += "</li>";
+            }
+        }
+
+        if (empty) {
+            return "There are no games in progress";
+        }
+
+        result += "</ul>";
+        return result;
+    }
+
+    function spectate(gameId: string): boolean {
+        let activeGames = workspace["activeGames"]();
+        if (!activeGames.hasOwnProperty(gameId)) {
+            return false;
+        }
+
+        let id = networkManager.id();
+
+        let game = activeGames[gameId];
+        game.addSpectator(id);
+        gameIdTable[id] = gameId;
+        return true;
+    }
+
+    userCounter++;
+    networkManager.login("anon" + userCounter);
 
     console.log("A user has connected. Users online: " + connectedUsers);
   

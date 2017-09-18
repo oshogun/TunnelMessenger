@@ -17,25 +17,34 @@ export class Network {
 		window["network"] = this;
 	}
 
-	public setProxy(proxy: Proxy): void {
-		this.proxy = proxy;
-	}
-
 	public send(data: any): void {
 		if (this.proxy !== null) {
 			this.proxy.send(data);
 		}
 	}
 
-	public receive(data: any): void {
-		this.receiveHandler(data);
-	}
-
 	public onReceive(callback: Callback): void {
 		this.receiveHandler = callback;
 	}
 
+	public isSpectating(): boolean {
+		return this.spectating;
+	}
+
+	public receive(data: any): void {
+		this.receiveHandler(data);
+	}
+
+	public setProxy(proxy: Proxy): void {
+		this.proxy = proxy;
+	}
+
+	public setSpectating(flag: boolean): void {
+		this.spectating = flag;
+	}
+
 	private static instance: Network|null = null;
-	private receiveHandler: Callback;
 	private proxy: Proxy|null = null;
+	private receiveHandler: Callback;
+	private spectating: boolean = false;
 }

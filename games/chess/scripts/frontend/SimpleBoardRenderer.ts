@@ -162,7 +162,7 @@ export class SimpleBoardRenderer implements BoardRenderer {
 
 		let self = this;
 		cell.addEventListener("click", function() {
-			if (self.locked) {
+			if (self.locked || self.network.isSpectating()) {
 				return;
 			}
 

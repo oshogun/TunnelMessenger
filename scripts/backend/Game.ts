@@ -8,25 +8,24 @@ const frameSizeTable = {
 
 export class Game {
 	constructor(networkManager: NetworkManager, workspace: Workspace,
-		id: string, from: SocketId, to: SocketId) {
+		id: string, from: SocketId, to: SocketId, gameName: string) {
 
 		this.networkManager = networkManager;
 		this.workspace = workspace;
 		this.id = id;
 		this.players = [from, to];
+		this.gameName = gameName;
 	}
 
-	public launch(gameName: string): void {
+	public launch(): void {
+		let gameName = this.gameName;
 		if (!frameSizeTable.hasOwnProperty(gameName)) {
 			throw Error("Failed to find the correct frame size");
 		}
 
-		let url = "/games/" + gameName + "/index.html";
-		let dimensions = frameSizeTable[gameName];
-
 		for (let i = 0; i < this.players.length; i++) {
-			this.sendToPlayers([i], "gameLaunch", i, url, this.id,
-				dimensions[0], dimensions[1]);
+			this.sendToPlayers([i], "gameLaunch", i, this.url(),
+				this.id, ...this.dimensions());
 		}
 	}
 
@@ -37,6 +36,26 @@ export class Game {
 		}
 
 		this.sendToPlayers(receivers, "gameAbort");
+		this.sendToSpectators("gameAbort");
+	}
+
+	public addSpectator(playerSocket: SocketId): void {
+		let networkManager = this.networkManager;
+		networkManager.sendToSockets([playerSocket], "gameLaunch", -1,
+			this.url(), this.id, ...this.dimensions());
+		this.spectators.push(playerSocket);
+	}
+
+	public removeSpectator(playerSocket: SocketId): void {
+		for (let i = 0; i < this.spectators.length; i++) {
+			if (this.spectators[i] == playerSocket) {
+				let networkManager = this.networkManager;
+				networkManager.sendToSockets([playerSocket], "gameAbort");
+
+				this.spectators.splice(i, 1);
+				break;
+			}
+		}
 	}
 
 	public receiveData(senderIndex: number, data: any): void {
@@ -48,10 +67,15 @@ export class Game {
 		}
 
 		this.sendToPlayers(receivers, "gameData", data);
+		this.sendToSpectators("gameData", data);
 	}
 
 	public getPlayerSockets(): SocketId[] {
 		return this.players;
+	}
+
+	public getName(): string {
+		return this.gameName;
 	}
 
 	private sendToPlayers(indexList: number[], type: string,
@@ -66,8 +90,22 @@ export class Game {
 		networkManager.sendToSockets(receivers, type, ...otherArgs);
 	}
 
+	private sendToSpectators(type: string, ...otherArgs: any[]): void {
+		this.networkManager.sendToSockets(this.spectators, type, ...otherArgs);
+	}
+
+	private url(): string {
+		return "/games/" + this.gameName + "/index.html";
+	}
+
+	private dimensions(): [number, number] {
+		return frameSizeTable[this.gameName];
+	}
+
 	private id: string;
+	private gameName: string;
 	private networkManager: NetworkManager;
 	private players: SocketId[];
+	private spectators: SocketId[] = [];
 	private workspace: Workspace;
 }

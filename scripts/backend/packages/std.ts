@@ -7,58 +7,6 @@ import {SocketId} from "../Settings"
 export let std: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
         let commands: CommandGroup = {
-            "/abortgames": {
-                "broadcast": true,
-                "description": "Aborts all games in progress",
-                "result": function() {
-                    if (workspace["closeGames"]()) {
-                        return "TEXT: Game aborted.";
-                    } else {
-                        return "TEXT: There are no games in progress.";
-                    }
-                },
-                "secret": true
-            },
-            "/chess": {
-                "broadcast": true,
-                "description": "Invites a given user to play chess",
-                "parameters": 1,
-                "result": function(targetUser) {
-                    // if (workspace["isPackageLoaded"]("chess")) {
-                    //     return "TEXT: There's already a game in progress.";
-                    // }
-
-                    // workspace["addPackage"]("chess");
-                    let senderName = workspace["senderName"]();
-
-                    let onAccept = function(id: string, from: SocketId, to: SocketId) {
-                        let message = "TEXT: Your invitation to play Chess against "
-                                    + senderName + " has been accepted.<br>"
-                                    + "The game will start soon.";
-                        workspace["serverToSender"](message);
-
-                        let game = new Game(networkManager, workspace, id, from, to);
-                        game.launch("chess");
-                        workspace["registerGame"](id, game);
-                    };
-
-                    let onReject = function() {
-                        let message = "TEXT: Your invitation to play Chess against "
-                                    + senderName + " has been declined.";
-                        workspace["serverToSender"](message);
-                    };
-
-                    let message = "The user " + workspace["senderName"]()
-                                + " invited you to play Chess.";
-
-                    if (workspace["gameInvite"](targetUser, message, onAccept, onReject)) {
-                        return "TEXT: An invitation has been sent.";
-                    } else {
-                        return "TEXT: You can't play against yourself.";
-                    }
-                },
-                "secret": true
-            },
             "/clear": {
                 "broadcast": false,
                 "description": "Clears the message box",

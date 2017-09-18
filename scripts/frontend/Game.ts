@@ -8,9 +8,9 @@ type Proxy = {
 };
 
 interface Network {
-	setProxy(proxy: Proxy): void;
-	send(data: any): void;
 	receive(data: any): void;
+	setProxy(proxy: Proxy): void;
+	setSpectating(flag: boolean): void;
 }
 
 function delay(time: number): Promise<void> {
@@ -82,9 +82,13 @@ export class Game {
 
 				network.setProxy({
 					send: function(data: any) {
-						socket.emit("gameData", id, playerIndex, data);
+						if (playerIndex >= 0) {
+							socket.emit("gameData", id, playerIndex, data);
+						}
 					}
 				});
+
+				network.setSpectating(playerIndex < 0);
 			});
 		};
 
