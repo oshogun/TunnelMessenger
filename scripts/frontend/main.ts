@@ -6,14 +6,13 @@ import {Game} from "./Game"
 import {MessageFactory} from "../shared/MessageFactory"
 import {User, UserType} from "../shared/User"
 
-// declare var io: {
-//     (): {
-//         emit: (type: string, ...args: any[]) => void;
-//         on: (type: string, handler: (...args: any[]) => void) => void;
-//     }
-// }
-declare var io;
- 
+declare var io: {
+    (): {
+        emit: (type: string, ...args: any[]) => void;
+        on: (type: string, handler: (...args: any[]) => void) => void;
+    }
+}
+
 $(document).ready(function() {
     console.log("Server running.");
 
