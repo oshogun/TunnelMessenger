@@ -39,6 +39,10 @@ export class NetworkManager {
     public sendToSockets(socketIds: SocketId[], type: string,
         ...otherArgs: any[]): void {
 
+        if (socketIds.length == 0) {
+            return;
+        }
+
         let emitter: any = this.io;
         for (let id of socketIds) {
             emitter = emitter.to(id);
