@@ -1,6 +1,17 @@
+type Map<T>
+	= {[key: string]: T}
+	| {[key: number]: T};
+type ArbitraryMap = Map<any>;
+
+type MapIteratorCallback<V>
+	= ((key: string, value: V) => boolean)
+	| ((key: string, value: V) => void);
+
 export namespace utils {
 	// Creates a tag with a given name and optionally given properties.
-	export function create(tag: string, props?: Object): Element {
+	export function create<T extends keyof HTMLElementTagNameMap, V>(tag: T,
+		props?: ArbitraryMap): HTMLElementTagNameMap[T] {
+
 		let result = document.createElement(tag);
 		if (props) {
 			this.foreach(props, function(key, value) {
@@ -15,7 +26,7 @@ export namespace utils {
 	}
 
 	// Iterates over an object, applying a callback to each property.
-	export function foreach(obj: Object, callback): void {
+	export function foreach<T>(obj: Map<T>, callback: MapIteratorCallback<T>): void {
 		for (var i in obj) {
 			if (obj.hasOwnProperty(i)) {
 				if (callback(i, obj[i]) === false) {
@@ -23,5 +34,9 @@ export namespace utils {
 				}
 			}
 		}
+	}
+
+	export function assertUnreachable(v: never): never {
+		throw Error("Runtime type violation");
 	}
 }

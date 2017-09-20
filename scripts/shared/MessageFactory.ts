@@ -19,7 +19,7 @@ export class MessageFactory {
                 message = new InviteMessage(content, author, date);
                 break;
             default:
-                throw Error("Unknown message type");
+                throw Error("Unknown message type '" + type + "'");
         }
 
         return message;

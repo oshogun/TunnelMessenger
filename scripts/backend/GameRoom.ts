@@ -1,7 +1,15 @@
 import {Game} from "./Game"
+import {gameInfoTable} from "./GameInfo"
 import {Workspace} from "./Commands"
 import {NetworkManager} from "./NetworkManager"
 import {SocketId} from "./Settings"
+
+export enum PlayerJoinStatus {
+	SUCCESS,
+	WRONG_PASSWORD,
+	TOO_MANY_PLAYERS,
+	NON_EXISTING_GAME_ROOM
+}
 
 export class GameRoom {
 	constructor(networkManager: NetworkManager, id: string,
@@ -19,20 +27,23 @@ export class GameRoom {
             this.getPlayerSockets(), this.gameName);
 	}
 
-	public addPlayer(playerSocket: SocketId, password?: string): boolean {
-		if (this.password === undefined || password === this.password) {
-			let allowed: boolean = false;
-			allowed = allowed || (password === undefined && !this.hasPassword());
-
-			// let networkManager = this.networkManager;
-			// networkManager.sendToSockets([playerSocket], "gameLaunch", -1,
-			// 	this.url(), this.id, ...this.dimensions());
-			// this.spectators.push(playerSocket);
-			this.players.push(playerSocket);
-			return true;
+	public addPlayer(playerSocket: SocketId, password?: string): PlayerJoinStatus {
+		if (this.password !== undefined && password !== this.password) {
+			return PlayerJoinStatus.WRONG_PASSWORD;
 		}
 
-		return false;
+		let gameInfo = gameInfoTable[this.gameName];
+		let playerCount = this.getPlayerCount();
+		if (playerCount == gameInfo.maxPlayers) {
+			return PlayerJoinStatus.TOO_MANY_PLAYERS;
+		}
+
+		// let networkManager = this.networkManager;
+		// networkManager.sendToSockets([playerSocket], "gameLaunch", -1,
+		// 	this.url(), this.id, ...this.dimensions());
+		// this.spectators.push(playerSocket);
+		this.players.push(playerSocket);
+		return PlayerJoinStatus.SUCCESS;
 	}
 
 	public removePlayer(playerSocket: SocketId): void {
@@ -70,6 +81,10 @@ export class GameRoom {
 
 	public hasPassword(): boolean {
 		return this.password !== undefined;
+	}
+
+	private getPlayerCount(): number {
+		return 1 + this.players.length;
 	}
 
 	private gameName: string;

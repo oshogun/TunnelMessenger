@@ -1,10 +1,7 @@
+import {gameInfoTable, GameInfo} from "./GameInfo"
 import {Workspace} from "./Commands"
 import {NetworkManager} from "./NetworkManager"
 import {SocketId} from "./Settings"
-
-const frameSizeTable = {
-	"chess": [730, 738]
-};
 
 export class Game {
 	constructor(networkManager: NetworkManager, id: string,
@@ -16,10 +13,18 @@ export class Game {
 		this.gameName = gameName;
 	}
 
+	public canLaunch(): boolean {
+		let gameInfo = this.info();
+		let minPlayers = gameInfo.minPlayers;
+		let maxPlayers = gameInfo.maxPlayers;
+
+		let playerCount = this.getPlayerCount();
+		return (playerCount >= minPlayers && playerCount <= maxPlayers);
+	}
+
 	public launch(): void {
-		let gameName = this.gameName;
-		if (!frameSizeTable.hasOwnProperty(gameName)) {
-			throw Error("Failed to find the correct frame size");
+		if (!this.canLaunch()) {
+			throw Error("Cannot launch game");
 		}
 
 		for (let i = 0; i < this.players.length; i++) {
@@ -77,6 +82,14 @@ export class Game {
 		return this.gameName;
 	}
 
+	public info(): GameInfo {
+		if (!gameInfoTable.hasOwnProperty(this.gameName)) {
+			throw Error("Failed to retrieve the game information");
+		}
+
+		return gameInfoTable[this.gameName];
+	}
+
 	private sendToPlayers(indexList: number[], type: string,
 		...otherArgs: any[]): void {
 
@@ -93,12 +106,16 @@ export class Game {
 		this.networkManager.sendToSockets(this.spectators, type, ...otherArgs);
 	}
 
+	private getPlayerCount(): number {
+		return this.players.length;
+	}
+
 	private url(): string {
 		return "/games/" + this.gameName + "/index.html";
 	}
 
 	private dimensions(): [number, number] {
-		return frameSizeTable[this.gameName];
+		return this.info().dimensions;
 	}
 
 	private id: string;

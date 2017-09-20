@@ -1,10 +1,12 @@
 import {Command, CommandGroup, CommandPackage, Workspace} from "../Commands"
 import {Game} from "../Game"
-import {GameRoom} from "../GameRoom"
+import {GameRoom, PlayerJoinStatus} from "../GameRoom"
+import {gameInfoTable} from "../GameInfo"
 import {MessageTarget} from "../MessageTarget"
 import {NetworkManager} from "../NetworkManager"
 import {SocketId} from "../Settings"
 import {UserManager} from "../UserManager"
+import {utils} from "../../shared/Utils"
 
 export let game_std: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
@@ -40,6 +42,12 @@ export let game_std: CommandPackage = {
                         workspace["serverToSender"](message);
 
                         let game = new Game(networkManager, id, [from, to], "chess");
+                        if (!game.canLaunch()) {
+                            // Shouldn't happen in practice, but just to be safe
+                            workspace["serverToSender"]("TEXT: Failed to launch game.");
+                            return;
+                        }
+
                         game.launch();
                         workspace["registerGame"](id, game);
                     };
@@ -59,6 +67,34 @@ export let game_std: CommandPackage = {
                     }
 
                     return "TEXT: An invitation has been sent.";
+                },
+                "secret": true
+            },
+            "/gameinfo": {
+                "broadcast": false,
+                "description": "Shows information about a game",
+                "parameters": 1,
+                "result": function(gameName: string) {
+                    if (!gameInfoTable.hasOwnProperty(gameName)) {
+                        return "TEXT: Invalid game name";
+                    }
+
+                    function range(min: number, max: number): string {
+                        if (min == max) {
+                            return min.toString();
+                        }
+
+                        return min + "~" + max;
+                    }
+
+                    let info = gameInfoTable[gameName];
+                    let result: string = "";
+                    let [width, height] = info.dimensions;
+                    let allowedPlayers = range(info.minPlayers, info.maxPlayers);
+                    result += "Frame size: " + width + "x" + height + "<br>";
+                    result += "Allowed players: " + allowedPlayers + "<br>";
+
+                    return "TEXT: " + result;
                 },
                 "secret": true
             },
@@ -113,11 +149,20 @@ export let game_std: CommandPackage = {
                         return "TEXT: You are already in a game room.";
                     }
 
-                    if (!workspace["join"](gameId, password)) {
-                        return "TEXT: Failed to join the room.";
+                    let joinStatus = <PlayerJoinStatus> workspace["join"](gameId, password);
+
+                    switch (joinStatus) {
+                        case PlayerJoinStatus.WRONG_PASSWORD:
+                            return "TEXT: Wrong password.";
+                        case PlayerJoinStatus.TOO_MANY_PLAYERS:
+                            return "TEXT: The room is full.";
+                        case PlayerJoinStatus.NON_EXISTING_GAME_ROOM:
+                            return "TEXT: Invalid game room ID.";
+                        case PlayerJoinStatus.SUCCESS:
+                            return "TEXT: You are now in a game room. Type /leaveroom to leave.";
                     }
 
-                    return "TEXT: You are now in a game room. Type /leaveroom to leave.";
+                    return utils.assertUnreachable(joinStatus);
                 },
                 "secret": true
             },
@@ -183,6 +228,9 @@ export let game_std: CommandPackage = {
                     }
 
                     let game = room.startGame();
+                    if (!game.canLaunch()) {
+                        return "TEXT: Failed to start the game: insufficient number of players";
+                    }
 
                     // Deletes the game room
                     workspace["leaveRoom"]();
@@ -192,7 +240,24 @@ export let game_std: CommandPackage = {
                     return "TEXT: The game will start soon.";
                 },
                 "secret": false
-            }
+            },
+            "/supportedgames": {
+                "broadcast": false,
+                "description": "Shows a list of all supported games",
+                "result": function() {
+                    let result: string = "<ul>";
+
+                    for (let name in gameInfoTable) {
+                        if (gameInfoTable.hasOwnProperty(name)) {
+                            result += "<li>" + name + "</li>";
+                        }
+                    }
+
+                    result += "</ul>";
+                    return "TEXT: " + result;
+                },
+                "secret": true
+            },
         };
 
         return commands;

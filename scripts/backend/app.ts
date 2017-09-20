@@ -2,7 +2,7 @@
 
 import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
 import {Game} from "./Game"
-import {GameRoom} from "./GameRoom"
+import {GameRoom, PlayerJoinStatus} from "./GameRoom"
 import {InviteSystem} from "./InviteSystem"
 import {MTGHandler} from "./Magic";
 import {MessageTarget} from "./MessageTarget"
@@ -402,20 +402,16 @@ io.on("connection", function(socket) {
         return result;
     }
 
-    function join(gameId: string, password?: string): boolean {
+    function join(gameId: string, password?: string): PlayerJoinStatus {
         if (!gameRoomTable.hasOwnProperty(gameId)) {
-            return false;
+            return PlayerJoinStatus.NON_EXISTING_GAME_ROOM;
         }
 
         let id = networkManager.id();
 
         let room = gameRoomTable[gameId];
-        if (!room.addPlayer(id, password)) {
-            return false;
-        }
-
         // gameIdTable[id] = gameId;
-        return true;
+        return room.addPlayer(id, password);
     }
 
     function leaveRoom(): boolean {
