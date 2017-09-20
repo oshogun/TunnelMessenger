@@ -3,6 +3,7 @@ import {Game} from "../Game"
 import {MessageTarget} from "../MessageTarget"
 import {NetworkManager} from "../NetworkManager"
 import {SocketId} from "../Settings"
+import {utils} from "../../shared/Utils"
 
 export let std: CommandPackage = {
     generateCommands: function(networkManager: NetworkManager, workspace: Workspace) {
@@ -21,20 +22,25 @@ export let std: CommandPackage = {
                 "description": "Lists all available commands",
                 "result": function() {
                     let output = "TEXT: Available commands:<ul>";
-                    for (let name in commands) {
-                        if (commands.hasOwnProperty(name)) {
-                            let command = commands[name];
+
+                    let availableCommands = <CommandGroup> workspace["getAllCommands"]();
+                    utils.sortedForeach(availableCommands, function(name, command) {
                             output += "<li>" + name;
 
                             if (command.parameters) {
                                 let commandStr: string;
+                                let plural: boolean;
                                 if (typeof command.parameters == "number") {
                                     commandStr = command.parameters.toString();
+                                    plural = (command.parameters > 1);
                                 } else {
                                     commandStr = command.parameters.join("-");
+                                    plural = true;
                                 }
 
-                                output += " (" + commandStr + " parameter(s))";
+                                output += " (" + commandStr + " ";
+                                output += (plural) ? "parameters" : "parameter";
+                                output += ")";
                             }
 
                             if (command.description) {
@@ -42,8 +48,7 @@ export let std: CommandPackage = {
                             }
 
                             output += "</li>";
-                        }
-                    }
+                    });
 
                     output += "</ul>";
                     return output;
@@ -67,14 +72,14 @@ export let std: CommandPackage = {
             },
             "/mtg": {
                 "broadcast": true,
-                "description":"Não é uma prova, é um texte",
+                "description": "Displays a given MTG card",
                 "parameters": 1,
                 "result": workspace["findMtgCardImage"],
                 "secret": false
             },
             "/mtgLegalities": {
                 "broadcast": true,
-                "description": "Displayes the legalities of a given MTG card",
+                "description": "Displays the legalities of a given MTG card",
                 "parameters": 1,
                 "result": workspace["findMtgLegalInfo"],
                 "secret": false

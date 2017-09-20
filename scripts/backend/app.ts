@@ -11,6 +11,7 @@ import {UserManager} from "./UserManager"
 import {UserPersistence} from "./UserPersistence"
 import {User, UserType} from "../shared/User"
 import {SocketId} from "./Settings"
+import {utils} from "../shared/Utils"
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -113,16 +114,6 @@ for (let i = 0; i < allowedFolders.length; i++) {
 
 type Map<T> = {[keys: string]: T};
 
-function extend<T>(obj: Map<T>, props: Map<T>): Map<T> {
-    for (var i in props) {
-        if (props.hasOwnProperty(i)) {
-            obj[i] = props[i];
-        }
-    }
-
-    return obj;
-}
-
 function sanitizeInput(content: string): string {
     if (!zoeira) {
         return markdown.toHTML(content).replace(/^(?:<p>)?(.*?)(?:<\/p>)?$/, "$1");
@@ -216,7 +207,7 @@ io.on("connection", function(socket) {
     commandLoader.addPackage("std", networkManager, workspace);
     commandLoader.addPackage("game_std", networkManager, workspace);
 
-    extend(workspace, {
+    utils.extend(workspace, {
         "addPackage": function(packageName: string) {
             commandLoader.addPackage(packageName, networkManager, workspace);
         },
@@ -225,6 +216,9 @@ io.on("connection", function(socket) {
         },
         "isPackageLoaded": function(packageName: string): boolean {
             return commandLoader.isPackageLoaded(packageName);
+        },
+        "getAllCommands": function() {
+            return commandLoader.getAllCommands();
         }
     });
 

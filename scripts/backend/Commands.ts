@@ -122,6 +122,10 @@ export class CommandLoader {
         return parameters;
     }
 
+    public getAllCommands(): CommandGroup {
+        return this.commands;
+    }
+
     private load(index: number, networkManager: NetworkManager,
         workspace: Workspace) {
 
