@@ -7,13 +7,12 @@ const frameSizeTable = {
 };
 
 export class Game {
-	constructor(networkManager: NetworkManager, workspace: Workspace,
-		id: string, from: SocketId, to: SocketId, gameName: string) {
+	constructor(networkManager: NetworkManager, id: string,
+		players: SocketId[], gameName: string) {
 
 		this.networkManager = networkManager;
-		this.workspace = workspace;
 		this.id = id;
-		this.players = [from, to];
+		this.players = players;
 		this.gameName = gameName;
 	}
 
@@ -107,5 +106,4 @@ export class Game {
 	private networkManager: NetworkManager;
 	private players: SocketId[];
 	private spectators: SocketId[] = [];
-	private workspace: Workspace;
 }

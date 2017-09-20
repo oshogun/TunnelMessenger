@@ -2,13 +2,15 @@
 
 import {Command, CommandLoader, CommandPackage, Workspace} from "./Commands"
 import {Game} from "./Game"
+import {GameRoom} from "./GameRoom"
 import {InviteSystem} from "./InviteSystem"
+import {MTGHandler} from "./Magic";
 import {MessageTarget} from "./MessageTarget"
 import {NetworkManager} from "./NetworkManager"
 import {UserManager} from "./UserManager"
 import {UserPersistence} from "./UserPersistence"
 import {User, UserType} from "../shared/User"
-import {MTGHandler} from "./Magic";
+import {SocketId} from "./Settings"
 
 // removes "js/backend" from the end
 let root = __dirname.split("/").slice(0, -2).join("/");
@@ -159,8 +161,24 @@ userManager.addUser("0", "SERVER");
 
 let inviteSystem = new InviteSystem();
 
+/**
+ * Maps an ID to a Game. This ID is used to allow
+ * players to join the game (the same applies to spectators).
+ */
 let activeGames: {[id: string]: Game} = {};
+
+/**
+ * Maps a player to a game ID. This is important not to
+ * allow users to have more than one game at their screen
+ * at a time.
+ */
 let gameIdTable: {[socketId: string]: string} = {};
+
+/**
+ * Maps an ID to a GameRoom. This ID is used to allow
+ * players to join it.
+ */
+let gameRoomTable: {[id: string]: GameRoom} = {};
 
 let connectedUsers = 0;
 let userCounter = 0;
@@ -171,6 +189,7 @@ io.on("connection", function(socket) {
     let networkManager = new NetworkManager(io, socket, userManager);
 
     let workspace: Workspace = {
+        "userManager": function() { return userManager; },
         "changeNickCallback": changeNickCallback,
         "zoeiraEnable": function() { zoeira = true; },
         "zoeiraDisable": function() { zoeira = false; },
@@ -185,7 +204,12 @@ io.on("connection", function(socket) {
         "closeGames": closeGames,
         "activeGames": function() { return activeGames; },
         "listGames": listGames,
-        "spectate": spectate
+        "spectate": spectate,
+        "host": host,
+        "listRooms": listRooms,
+        "join": join,
+        "leaveRoom": leaveRoom,
+        "getGameRoom": getGameRoom,
     };
 
     let commandLoader = new CommandLoader();
@@ -253,9 +277,13 @@ io.on("connection", function(socket) {
         networkManager.serverToUser(targetUser, message);
     }
 
-    function registerGame(id, game) {
+    function registerGame(id: string, game: Game) {
         activeGames[id] = game;
-        gameIdTable[networkManager.id()] = id;
+
+        let playerSockets = game.getPlayerSockets();
+        for (let socket of playerSockets) {
+            gameIdTable[socket] = id;
+        }
     }
 
     function closeGames(): boolean {
@@ -296,8 +324,8 @@ io.on("connection", function(socket) {
             if (activeGames.hasOwnProperty(id)) {
                 empty = false;
                 let game = activeGames[id];
-                let sockets = game.getPlayerSockets();
 
+                let sockets = game.getPlayerSockets();
                 let playerNames: string[] = [];
                 for (let socket of sockets) {
                     playerNames.push(userManager.getName(socket));
@@ -311,7 +339,7 @@ io.on("connection", function(socket) {
         }
 
         if (empty) {
-            return "There are no games in progress";
+            return "There are no games in progress.";
         }
 
         result += "</ul>";
@@ -319,7 +347,6 @@ io.on("connection", function(socket) {
     }
 
     function spectate(gameId: string): boolean {
-        let activeGames = workspace["activeGames"]();
         if (!activeGames.hasOwnProperty(gameId)) {
             return false;
         }
@@ -330,6 +357,102 @@ io.on("connection", function(socket) {
         game.addSpectator(id);
         gameIdTable[id] = gameId;
         return true;
+    }
+
+    function host(gameName: string, password?: string): boolean {
+        let id = uid();
+        let roomLeader = networkManager.id();
+        let room = new GameRoom(networkManager, id, roomLeader, gameName, password);
+        gameRoomTable[id] = room;
+        return true;
+    }
+
+    function listRooms(): string {
+        let empty: boolean = true;
+        let result: string = "<ul>";
+
+        for (let id in gameRoomTable) {
+            if (gameRoomTable.hasOwnProperty(id)) {
+                empty = false;
+                let room = gameRoomTable[id];
+
+                let sockets = room.getPlayerSockets();
+                let playerNames: string[] = [];
+                for (let socket of sockets) {
+                    playerNames.push(userManager.getName(socket));
+                }
+
+                result += "<li>";
+                result += "(" + id + ") " + ucfirst(room.getGameName()) + ": ";
+                result += playerNames.join(", ");
+
+                if (room.hasPassword()) {
+                    result += " [password protected]";
+                }
+
+                result += "</li>";
+            }
+        }
+
+        if (empty) {
+            return "There are no open game rooms.";
+        }
+
+        result += "</ul>";
+        return result;
+    }
+
+    function join(gameId: string, password?: string): boolean {
+        if (!gameRoomTable.hasOwnProperty(gameId)) {
+            return false;
+        }
+
+        let id = networkManager.id();
+
+        let room = gameRoomTable[gameId];
+        if (!room.addPlayer(id, password)) {
+            return false;
+        }
+
+        // gameIdTable[id] = gameId;
+        return true;
+    }
+
+    function leaveRoom(): boolean {
+        let room = getGameRoom();
+        if (room === null) {
+            return false;
+        }
+
+        let id = networkManager.id();
+
+        let isRoomLeader = room.isRoomLeader(id);
+        room.removePlayer(id);
+
+        if (isRoomLeader) {
+            delete gameRoomTable[room.getId()];
+        }
+
+        return true;
+    }
+
+    function getGameRoom(): GameRoom|null {
+        let id = networkManager.id();
+
+        for (let gameId in gameRoomTable) {
+            if (gameRoomTable.hasOwnProperty(gameId)) {
+                let room = gameRoomTable[gameId];
+
+                let sockets = room.getPlayerSockets();
+                for (let socket of sockets) {
+                    if (socket == id) {
+                        return room;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     userCounter++;
@@ -358,8 +481,23 @@ io.on("connection", function(socket) {
         if (isValidCommand) {
             let parameters = commandLoader.parseParameters(message);
             if (command.hasOwnProperty("parameters")) {
-                if (command.parameters != parameters.length) {
-                    networkManager.serverBroadcast("TEXT: expected " + command.parameters + " parameters");
+                let expectedParamCount = command.parameters!;
+                let actualParamCount = parameters.length;
+
+                let allowedParamCount: boolean;
+                let expectedStr: string;
+
+                if (typeof expectedParamCount == "number") {
+                    allowedParamCount = (expectedParamCount == actualParamCount);
+                    expectedStr = expectedParamCount.toString();
+                } else {
+                    allowedParamCount = (actualParamCount >= expectedParamCount[0])
+                                     && (actualParamCount <= expectedParamCount[1]);
+                    expectedStr = expectedParamCount.join("-");
+                }
+
+                if (!allowedParamCount) {
+                    networkManager.serverBroadcast("TEXT: expected " + expectedStr + " parameters");
                     return;
                 }
             }

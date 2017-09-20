@@ -27,7 +27,14 @@ export let std: CommandPackage = {
                             output += "<li>" + name;
 
                             if (command.parameters) {
-                                output += " (" + command.parameters + " parameter(s))";
+                                let commandStr: string;
+                                if (typeof command.parameters == "number") {
+                                    commandStr = command.parameters.toString();
+                                } else {
+                                    commandStr = command.parameters.join("-");
+                                }
+
+                                output += " (" + commandStr + " parameter(s))";
                             }
 
                             if (command.description) {
@@ -47,6 +54,7 @@ export let std: CommandPackage = {
                 "broadcast": true,
                 "description": "Displays the URL of this project's github page",
                 "result": "TEXT: https://github.com/oshogun/TunnelMessenger",
+                "secret": true
             },
             "/mute": {
                 "broadcast": false,
@@ -58,32 +66,37 @@ export let std: CommandPackage = {
                 "secret": true
             },
             "/mtg": {
-                "broadcast":true,
+                "broadcast": true,
                 "description":"Não é uma prova, é um texte",
                 "parameters": 1,
-                "result": workspace["findMtgCardImage"]
+                "result": workspace["findMtgCardImage"],
+                "secret": false
             },
             "/mtgLegalities": {
                 "broadcast": true,
                 "description": "Displayes the legalities of a given MTG card",
                 "parameters": 1,
-                "result": workspace["findMtgLegalInfo"]
+                "result": workspace["findMtgLegalInfo"],
+                "secret": false
             },
             "/nick": {
                 "broadcast": false,
                 "description": "Changes the nickname of the user",
                 "parameters": 1,
-                "result": workspace["changeNickCallback"]
+                "result": workspace["changeNickCallback"],
+                "secret": true
             },
             "/settings": {
                 "broadcast": false,
                 "description": "Displays a settings menu",
-                "result": "MENU: settings"
+                "result": "MENU: settings",
+                "secret": true
             },
             "/smash": {
                 "broadcast": false,
                 "result": "IMAGE: https://i.ytimg.com/vi/U1tdKEd-l6Q/maxresdefault.jpg",
-                "description":"Lets the user smash"
+                "description": "Lets the user smash",
+                "secret": false
             },
             "/unmute": {
                 "broadcast": false,
@@ -103,14 +116,16 @@ export let std: CommandPackage = {
                     let iframe = "<iframe width='560' height='315' src='"
                         + url + "' frameborder='0' allowfullscreen></iframe>";
                     return "TEXT: " + iframe;
-                }
+                },
+                "secret": false
             },
             "/whoami": {
                 "broadcast": true,
                 "description": "Shows your nickname",
                 "result": function() {
                     return "TEXT: " + networkManager.user()
-                }
+                },
+                "secret": true
             },
             "/zoeira_disable": {
                 "broadcast": false,
@@ -118,7 +133,8 @@ export let std: CommandPackage = {
                 "result": function() {
                     workspace["zoeiraDisable"]();
                     return "TEXT: zoeira mode aborted";
-                }
+                },
+                "secret": false
             },
             "/zoeira_enable": {
                 "broadcast": false,
@@ -126,7 +142,8 @@ export let std: CommandPackage = {
                 "result": function() {
                     workspace["zoeiraEnable"]();
                     return "TEXT: zoeira mode ENGAGED";
-                }
+                },
+                "secret": false
             },
             "/roll": {
                 "broadcast": true,
@@ -145,7 +162,8 @@ export let std: CommandPackage = {
                         result+= Math.floor(Math.random() * (max - min)) + min;
                     }
                     return "TEXT: Roll " + n_dice + "d" + m_sides+": " + result;
-                }
+                },
+                "secret": false
             },
         };
 

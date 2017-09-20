@@ -11,14 +11,16 @@ export let chess: CommandPackage = {
                 "result": function() {
                     workspace["removePackage"]("chess");
                     return "TEXT: You have flied away from the match.";
-                }
+                },
+                "secret": true
             },
             "/move": {
                 "broadcast": true,
                 "description": "Makes a move",
                 "result": function() {
                     return "TEXT: Your move has been executed.";
-                }
+                },
+                "secret": true
             },
         };
 
