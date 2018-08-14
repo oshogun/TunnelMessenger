@@ -84,7 +84,6 @@ $(FRONTENDMAIN): $(FRONTENDFILES)
 
 install:
 	@npm install
-	@node create_tables.js
 
 run:
 	@node $(BACKENDMAIN)

@@ -73,7 +73,7 @@ export class Game {
 
 		let attempt = function() {
 			delay(100).then(function() {
-				let network = <Network> iframe.contentWindow["network"];
+				let network = <Network> iframe.contentWindow!["network"];
 				if (!network) {
 					return attempt();
 				}
