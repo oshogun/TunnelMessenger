@@ -12,29 +12,31 @@
 </head>
 <body>
 
-<div id="userList"> 
-    <span class="row">
-        <div id="onlineHeader">Who is Online?</div>
-    </span>
-    <span class="row" id="listrow">
-        <div id="list"></div>
-    </span>
-</div>
+<div id="pageContainer">
+    <div id="chat">
+        <div id="header">Chat #1</div>
 
-<div id="chat">
-    <div id="header">Chat #1</div>
+        <div id="chatBox"></div>
 
-    <div id="chatBox"></div>
+        <div id="typingCell">&nbsp;</div>
 
-    <div id="typingCell">&nbsp;</div>
-
-    <div id="footer">
-        <div id="messageBoxWrapper">
-            <input type="text" id="messageBox" placeholder="Digite uma mensagem" autocomplete="off">
-            <input type="text" id="nicknameBox" placeholder="Novo Nickname" autocomplete="off">
-            <input type="button" class="button" id="sendNickname" value="Change Nickname">
-            <input type="button" class="button" id="sendMessage" value="Send">
+        <div id="footer">
+            <div id="messageBoxWrapper">
+                <input type="text" id="messageBox" placeholder="Digite uma mensagem" autocomplete="off">
+                <input type="text" id="nicknameBox" placeholder="Novo Nickname" autocomplete="off">
+                <input type="button" class="button" id="sendNickname" value="Change Nickname">
+                <input type="button" class="button" id="sendMessage" value="Send">
+            </div>
         </div>
+    </div>
+
+    <div id="userList">
+        <span class="row">
+            <div id="onlineHeader">Who is Online?</div>
+        </span>
+        <span class="row" id="listrow">
+            <div id="list"></div>
+        </span>
     </div>
 </div>
 

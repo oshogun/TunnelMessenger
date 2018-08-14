@@ -1,4 +1,5 @@
 import {MessageTarget} from "./MessageTarget"
+import {SocketId} from "./Settings"
 import {UserManager} from "./UserManager"
 
 export class NetworkManager {
@@ -35,12 +36,34 @@ export class NetworkManager {
         method.apply(proxy, args);
     }
 
-    public serverToSender(message): void {
-        this.socket.emit("chatMessage", this.getName(0), message);
+    public sendToSockets(socketIds: SocketId[], type: string,
+        ...otherArgs: any[]): void {
+
+        if (socketIds.length == 0) {
+            return;
+        }
+
+        let emitter: any = this.io;
+        for (let id of socketIds) {
+            emitter = emitter.to(id);
+        }
+
+        let args = [type].concat(otherArgs);
+        emitter.emit.apply(emitter, args);
     }
 
-    public serverBroadcast(message): void {
-        this.io.emit("chatMessage", this.getName(0), message);
+    public serverToSender(message: string, id?: string): void {
+        this.socket.emit("chatMessage", this.server(), message, id);
+    }
+
+    public serverBroadcast(message: string, id?: string): void {
+        this.io.emit("chatMessage", this.server(), message, id);
+    }
+
+    public serverToUser(targetUser: string, message: string, id?: string): void {
+        let targetSocketId = this.userManager.getSocketId(targetUser);
+        let emitter = this.io.to(targetSocketId);
+        emitter.emit("chatMessage", this.server(), message, id);
     }
 
     public login(name: string): void {
@@ -62,16 +85,20 @@ export class NetworkManager {
         return this.getName(this.id());
     }
 
-    private getName(socketId: number): string {
+    public id(): SocketId {
+        return this.socket.id;
+    }
+
+    private server(): string {
+        return this.getName("0");
+    }
+
+    private getName(socketId: SocketId): string {
         return this.userManager.getName(socketId);
     }
 
     private nicknames() {
         return this.userManager.getNicknames();
-    }
-
-    private id(): number {
-        return this.socket.id;
     }
 
     private io: any;

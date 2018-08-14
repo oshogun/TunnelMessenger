@@ -9,8 +9,8 @@ export interface Command {
     // Message shown by /help
     description: string;
 
-    // If this command takes arguments, how many does it take?
-    parameters?: number;
+    // If this command takes arguments, how many does it take? (can be a range)
+    parameters?: number|[number, number];
 
     // Code executed by the command. If a string is returned,
     // it is either echoed by the SERVER (if it's a "TEXT: "
@@ -19,7 +19,7 @@ export interface Command {
     result: string|((...args: any[]) => string)|Function;
 
     // Should the output of this command be shown only to the user who typed it?
-    secret?: boolean;
+    secret: boolean;
 }
 
 export type CommandGroup = {[name: string]: Command};
@@ -120,6 +120,10 @@ export class CommandLoader {
         }
 
         return parameters;
+    }
+
+    public getAllCommands(): CommandGroup {
+        return this.commands;
     }
 
     private load(index: number, networkManager: NetworkManager,
