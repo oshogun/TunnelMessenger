@@ -19,7 +19,7 @@ $(document).ready(function() {
     let socket = io();
     let audio = new Audio("/public/notify.ogg", document.body);
 
-    let chat = new Chat("Chat #1", [], $("#chatBox").get(0));
+    let chat = new Chat("Chat #1", [], $("#chatBox").get(0) as HTMLElement);
     chat.setSocketHandler(socket);
 
     let defaultTitle = document.title;
@@ -63,7 +63,7 @@ $(document).ready(function() {
         }
     });
 
-    $("#messageBox").get(0).addEventListener("paste", function(e) {
+    $("#messageBox").get(0).addEventListener("paste", function(e: ClipboardEvent) {
         let items = e.clipboardData.items;
         if (!items) {
             return;
